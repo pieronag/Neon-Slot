@@ -73,15 +73,12 @@ let _savedDaily: any = {}
 try { _savedDaily = JSON.parse(localStorage.getItem('ns_daily') || '{}') } catch {}
 
 function saveLocalState(data: any) {
-  try {
-    const cur = JSON.parse(localStorage.getItem('ns_daily') || '{}')
-    localStorage.setItem('ns_daily', JSON.stringify({ ...cur, ...data }))
-  } catch {}
+  try { localStorage.setItem('ns_daily', JSON.stringify(data)) } catch {}
 }
 
 export const useProgressionStore = create<ProgressionState>((set, get) => ({
   dailyLoginDay: _savedDaily.dailyLoginDay || 1,
-  dailyLoginClaimed: _savedDaily.dailyLoginClaimed || false,
+  dailyLoginClaimed: _savedDaily.dailyLoginClaimed === true,
   lastLoginDate: _savedDaily.lastLoginDate || '',
   xp: 0,
   level: 1,
@@ -113,8 +110,10 @@ export const useProgressionStore = create<ProgressionState>((set, get) => ({
     const streakBonus = STREAK_BONUS[Math.min(day, STREAK_BONUS.length - 1)]
     const total = baseReward + streakBonus
     useGameStore.setState({ balance: useGameStore.getState().balance + total })
-    set({ dailyLoginClaimed: true })
-    saveLocalState({ dailyLoginClaimed: true, dailyLoginDay: get().dailyLoginDay, lastLoginDate: get().lastLoginDate })
+    const newDay = get().dailyLoginDay
+    const today = new Date().toDateString()
+    set({ dailyLoginClaimed: true, lastLoginDate: today })
+    saveLocalState({ dailyLoginClaimed: true, dailyLoginDay: newDay, lastLoginDate: today })
     const { useAuthStore } = await import('./authStore')
     useAuthStore.getState().addTransaction({
       type: 'login', amount: total,
