@@ -1,6 +1,6 @@
 import { create } from 'zustand'
-import type { BingoCard, ExtraOption, CompletedPattern } from '../types/bingo'
-import { generateCard, checkPatterns, calcExtraOptions, pickRandomExtra } from '../lib/bingoEngine'
+import type { BingoCard, CompletedPattern } from '../types/bingo'
+import { generateCard, checkPatterns, countExtraChances } from '../lib/bingoEngine'
 import { useGameStore } from './gameStore'
 import { useUIStore } from './uiStore'
 import { useAuthStore } from './authStore'
@@ -19,7 +19,8 @@ interface BingoState {
   currentWins: number
   pendingWins: number
   claimed: boolean
-  extraOptions: ExtraOption[]
+  extraChances: number
+  extraCost: number
   extraUsed: number
   gameOver: boolean
   extraResult: { number: number; won: number } | null
@@ -57,7 +58,8 @@ export const useBingoStore = create<BingoState>((set, get) => ({
   currentWins: 0,
   pendingWins: 0,
   claimed: false,
-  extraOptions: [],
+  extraChances: 0,
+  extraCost: 0,
   extraUsed: 0,
   gameOver: false,
   extraResult: null,
@@ -65,20 +67,10 @@ export const useBingoStore = create<BingoState>((set, get) => ({
   setCardCount: (n) => {
     const count = Math.max(1, Math.min(4, n))
     const { cards } = get()
-    // Keep existing cards when adding new ones; remove extras when reducing
-    const existing = new Set<string>()
-    // Track all numbers from cards we want to keep
     const keepCards = cards.slice(0, count)
-    for (let i = 0; i < keepCards.length; i++) {
-      for (let c = 0; c < 5; c++)
-        for (let r = 0; r < 3; r++)
-          existing.add(`${c}-${keepCards[i].columns[c][r]}`)
-    }
-    // Generate any new cards needed
     const newCards = [...keepCards]
-    for (let i = keepCards.length; i < count; i++) {
-      newCards.push(generateCard(i, existing))
-    }
+    for (let i = keepCards.length; i < count; i++)
+      newCards.push(generateCard(i))
     set({ cardCount: count, cards: newCards })
   },
 
@@ -87,95 +79,59 @@ export const useBingoStore = create<BingoState>((set, get) => ({
 
   generatePreview: () => {
     const { cardCount } = get()
-    const existing = new Set<string>()
-    const cards = Array.from({ length: cardCount }, (_, i) => generateCard(i, existing))
+    const cards = Array.from({ length: cardCount }, (_, i) => generateCard(i))
     set({ cards, calledNumbers: [], isPlaying: false, roundOver: false, completedPatterns: [], totalWin: 0, currentWins: 0, pendingWins: 0, claimed: false, extraResult: null })
   },
 
   regenerateCard: (index) => {
     const { cards } = get()
     if (index < 0 || index >= cards.length) return
-    const existing = new Set<string>()
-    for (let i = 0; i < cards.length; i++) {
-      if (i === index) continue
-      for (let c = 0; c < 5; c++)
-        for (let r = 0; r < 3; r++)
-          existing.add(`${c}-${cards[i].columns[c][r]}`)
-    }
-    const newCard = generateCard(index, existing)
-    const newCards = cards.map((c, i) => i === index ? newCard : c)
-    set({ cards: newCards })
+    const newCard = generateCard(index)
+    set({ cards: cards.map((c, i) => i === index ? newCard : c) })
   },
 
-  randomizeCards: () => {
-    get().generatePreview()
-  },
+  randomizeCards: () => { get().generatePreview() },
 
   startGame: () => {
     const { cards, betAmount } = get()
     const totalCost = cards.length * betAmount
     const gs = useGameStore.getState()
-    if (gs.balance < totalCost) {
-      useUIStore.getState().addNotification('Saldo insuficiente', 'info')
-      return
-    }
+    if (gs.balance < totalCost) { useUIStore.getState().addNotification('Saldo insuficiente', 'info'); return }
     useGameStore.setState({ balance: gs.balance - totalCost })
     useAuthStore.getState().updateProfile({ balance: gs.balance - totalCost })
     useProgressionStore.getState().awardXP(Math.max(1, Math.floor(totalCost / 50)))
     useProgressionStore.getState().checkAchievements()
-    // Update missions
-    const missions = useProgressionStore.getState().dailyMissions
-    missions.forEach(m => {
+    useProgressionStore.getState().dailyMissions.forEach(m => {
       if (m.id.startsWith('bingo') && !m.completed) useProgressionStore.getState().updateMission(m.id, 1)
       if (m.id.startsWith('spin') && !m.completed) useProgressionStore.getState().updateMission(m.id, 1)
     })
     set({
-      calledNumbers: [],
-      isPlaying: true,
-      roundOver: false,
-      completedPatterns: [],
-      totalWin: 0,
-      currentWins: 0,
-      pendingWins: 0,
-      claimed: false,
-      extraOptions: [],
-      extraUsed: 0,
-      gameOver: false,
-      extraResult: null,
+      calledNumbers: [], isPlaying: true, roundOver: false, completedPatterns: [],
+      totalWin: 0, currentWins: 0, pendingWins: 0, claimed: false,
+      extraUsed: 0, gameOver: false, extraResult: null,
     })
   },
 
   markNumber: (n) => {
     const { cards } = get()
-    const newCards = cards.map(c => {
+    set({ cards: cards.map(c => {
       const marked = c.marked.map(col => [...col])
-      for (let col = 0; col < 5; col++) {
-        for (let row = 0; row < 3; row++) {
+      for (let col = 0; col < 5; col++)
+        for (let row = 0; row < 3; row++)
           if (c.columns[col][row] === n) marked[col][row] = true
-        }
-      }
       return { ...c, marked }
-    })
-    set({ cards: newCards })
+    }) })
   },
 
   endRound: () => {
     const { cards, betAmount } = get()
     const patterns = checkPatterns(cards, betAmount)
     const total = patterns.reduce((s, p) => s + p.payout, 0)
-    set({
-      roundOver: true,
-      completedPatterns: patterns,
-      totalWin: total,
-      pendingWins: get().pendingWins + total,
-      isPlaying: false,
-    })
+    set({ roundOver: true, completedPatterns: patterns, totalWin: total, pendingWins: get().pendingWins + total, isPlaying: false })
     if (total > 0) {
       useProgressionStore.getState().awardXP(Math.max(5, Math.floor(total / 10)))
       useProgressionStore.getState().checkAchievements()
-      // Update bonus mission (patterns completed)
-      const missions = useProgressionStore.getState().dailyMissions
-      missions.forEach(m => {
+      useProgressionStore.getState().dailyMissions.forEach(m => {
         if (m.id.startsWith('bonus') && !m.completed) useProgressionStore.getState().updateMission(m.id, patterns.length)
       })
     }
@@ -184,59 +140,41 @@ export const useBingoStore = create<BingoState>((set, get) => ({
   callNext: () => {
     const { calledNumbers } = get()
     const available: number[] = []
-    for (let n = 1; n <= 90; n++) {
-      if (!calledNumbers.includes(n)) available.push(n)
-    }
+    for (let n = 1; n <= 90; n++) { if (!calledNumbers.includes(n)) available.push(n) }
     if (available.length === 0) return true
     const pick = available[Math.floor(Math.random() * available.length)]
-    const newCalled = [...calledNumbers, pick]
-    set({ calledNumbers: newCalled })
+    set({ calledNumbers: [...calledNumbers, pick] })
     get().markNumber(pick)
-    if (newCalled.length >= MAX_CALLS) return true
-    return false
+    return calledNumbers.length + 1 >= MAX_CALLS
   },
 
   calcExtras: () => {
     const { cards, calledNumbers, betAmount } = get()
     const calledSet = new Set(calledNumbers)
-    const options = calcExtraOptions(cards, calledSet, betAmount)
-    set({ extraOptions: options.slice(0, 10) })
+    const chances = countExtraChances(cards, calledSet)
+    const cost = Math.max(10, Math.round(chances * (betAmount / 100) * 2))
+    set({ extraChances: chances, extraCost: cost })
   },
 
   buyRandomExtra: () => {
-    const { extraOptions, extraUsed, betAmount, calledNumbers } = get()
+    const { extraCost, extraUsed, betAmount, calledNumbers } = get()
     const gs = useGameStore.getState()
+    if (gs.balance < extraCost) { useUIStore.getState().addNotification('Saldo insuficiente para extra', 'info'); return }
 
-    let option: ExtraOption | null = null
-    let cost = 0
+    useGameStore.setState({ balance: gs.balance - extraCost })
+    useAuthStore.getState().updateProfile({ balance: gs.balance - extraCost })
+    useProgressionStore.getState().awardXP(Math.max(1, Math.floor(extraCost / 50)))
 
-    if (extraOptions.length > 0) {
-      option = pickRandomExtra(extraOptions)
-      if (!option) return
-      if (gs.balance < option.cost) {
-        useUIStore.getState().addNotification('Saldo insuficiente para extra', 'info')
-        return
-      }
-      cost = option.cost
-    } else {
-      // No options available: draw a random remaining number for free
-      const available: number[] = []
-      for (let n = 1; n <= 90; n++) {
-        if (!calledNumbers.includes(n)) available.push(n)
-      }
-      if (available.length === 0) return
-      const num = available[Math.floor(Math.random() * available.length)]
-      option = { number: num, potentialWin: 0, cost: 0, completedPatterns: [] }
-    }
+    // Draw a random remaining number
+    const available: number[] = []
+    for (let n = 1; n <= 90; n++) { if (!calledNumbers.includes(n)) available.push(n) }
+    if (available.length === 0) return
+    const num = available[Math.floor(Math.random() * available.length)]
 
-    useGameStore.setState({ balance: gs.balance - cost })
-    useAuthStore.getState().updateProfile({ balance: gs.balance - cost })
-    useProgressionStore.getState().awardXP(Math.max(1, Math.floor(cost / 50)))
-    get().markNumber(option.number)
-    const newCalled = [...get().calledNumbers, option.number]
-    set({ calledNumbers: newCalled })
+    get().markNumber(num)
+    set({ calledNumbers: [...get().calledNumbers, num] })
 
-    // Use updated cards after marking
+    // Check for new patterns
     const { cards: updatedCards } = get()
     const existing = new Set(get().completedPatterns.map(cp => `${cp.cardIndex}-${cp.patternId}`))
     const allPatterns = checkPatterns(updatedCards, betAmount)
@@ -251,8 +189,7 @@ export const useBingoStore = create<BingoState>((set, get) => ({
       totalWin: get().totalWin + newPayout,
       pendingWins: get().pendingWins + newPayout,
       claimed: newPayout > 0 ? false : get().claimed,
-      extraOptions: [],
-      extraResult: { number: option.number, won: newPayout },
+      extraResult: { number: num, won: newPayout },
       gameOver,
     })
 
@@ -260,15 +197,12 @@ export const useBingoStore = create<BingoState>((set, get) => ({
       setTimeout(() => {
         const s = get()
         const calledSet = new Set(s.calledNumbers)
-        const opts = calcExtraOptions(s.cards, calledSet, s.betAmount)
-        set({ extraOptions: opts.slice(0, 10) })
+        set({ extraChances: countExtraChances(s.cards, calledSet), extraCost: Math.max(10, Math.round(countExtraChances(s.cards, calledSet) * (s.betAmount / 100) * 2)) })
       }, 100)
     }
   },
 
-  finishGame: () => {
-    set({ gameOver: true, isPlaying: false })
-  },
+  finishGame: () => { set({ gameOver: true, isPlaying: false }) },
 
   claimWinnings: () => {
     const { pendingWins } = get()
@@ -278,9 +212,7 @@ export const useBingoStore = create<BingoState>((set, get) => ({
     useAuthStore.getState().updateProfile({ balance: gs.balance + pendingWins })
     useProgressionStore.getState().awardXP(Math.max(5, Math.floor(pendingWins / 20)))
     useProgressionStore.getState().checkAchievements()
-    // Update win mission
-    const missions = useProgressionStore.getState().dailyMissions
-    missions.forEach(m => {
+    useProgressionStore.getState().dailyMissions.forEach(m => {
       if (m.id.startsWith('win') && !m.completed) useProgressionStore.getState().updateMission(m.id, pendingWins)
     })
     set({ claimed: true, currentWins: get().currentWins + pendingWins, pendingWins: 0 })
@@ -288,19 +220,9 @@ export const useBingoStore = create<BingoState>((set, get) => ({
 
   resetGame: () => {
     set({
-      cards: [],
-      calledNumbers: [],
-      isPlaying: false,
-      roundOver: false,
-      completedPatterns: [],
-      totalWin: 0,
-      currentWins: 0,
-      pendingWins: 0,
-      claimed: false,
-      extraOptions: [],
-      extraUsed: 0,
-      gameOver: false,
-      extraResult: null,
+      cards: [], calledNumbers: [], isPlaying: false, roundOver: false,
+      completedPatterns: [], totalWin: 0, currentWins: 0, pendingWins: 0,
+      claimed: false, extraUsed: 0, gameOver: false, extraResult: null,
     })
     get().generatePreview()
   },

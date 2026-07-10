@@ -2,7 +2,7 @@ import type { BingoCard, ExtraOption, CompletedPattern } from '../types/bingo'
 import { COL_RANGES } from '../types/bingo'
 import { PATTERNS } from './bingoPatterns'
 
-export function generateCard(id: number, existing: Set<string>): BingoCard {
+export function generateCard(id: number): BingoCard {
   const columns: number[][] = []
   const marked: boolean[][] = []
   for (let c = 0; c < 5; c++) {
@@ -11,11 +11,9 @@ export function generateCard(id: number, existing: Set<string>): BingoCard {
     const used = new Set<number>()
     while (col.length < 3) {
       const n = Math.floor(Math.random() * (max - min + 1)) + min
-      const key = `${c}-${n}`
-      if (!used.has(n) && !existing.has(key)) {
+      if (!used.has(n)) {
         used.add(n)
         col.push(n)
-        existing.add(key)
       }
     }
     col.sort((a, b) => a - b)
@@ -26,8 +24,7 @@ export function generateCard(id: number, existing: Set<string>): BingoCard {
 }
 
 export function generateCards(count: number): BingoCard[] {
-  const existing = new Set<string>()
-  return Array.from({ length: count }, (_, i) => generateCard(i, existing))
+  return Array.from({ length: count }, (_, i) => generateCard(i))
 }
 
 export function checkPatterns(cards: BingoCard[], betAmount: number): CompletedPattern[] {
@@ -83,6 +80,25 @@ export function calcExtraOptions(cards: BingoCard[], called: Set<number>, betAmo
 export function pickRandomExtra(options: ExtraOption[]): ExtraOption | null {
   if (options.length === 0) return null
   return options[Math.floor(Math.random() * options.length)]
+}
+
+export function countExtraChances(cards: BingoCard[], called: Set<number>): number {
+  let chances = 0
+  for (let n = 1; n <= 90; n++) {
+    if (called.has(n)) continue
+    for (const card of cards) {
+      const pos = findNumberPosition(card, n)
+      if (!pos) continue
+      const [col, row] = pos
+      if (card.marked[col][row]) continue
+      const testMarked = card.marked.map((colArr, ci2) => colArr.map((v, ri) => v || (ci2 === col && ri === row)))
+      for (const p of PATTERNS) {
+        if (p.check(testMarked)) { chances++; break }
+      }
+      break // only count once per number (any card)
+    }
+  }
+  return chances
 }
 
 function findNumberPosition(card: BingoCard, num: number): [number, number] | null {

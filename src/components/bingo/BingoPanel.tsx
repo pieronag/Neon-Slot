@@ -86,16 +86,12 @@ export function BingoPanel() {
   const {
     cardCount, betAmount, isPlaying, isTurbo, roundOver,
     calledNumbers, completedPatterns, totalWin, currentWins,
-    extraOptions, gameOver, pendingWins, claimed,
+    gameOver, pendingWins, claimed, extraCost,
     setCardCount, setBetAmount, setTurbo,
     startGame, buyRandomExtra, resetGame, randomizeCards, claimWinnings,
   } = useBingoStore()
   const balance = useGameStore(s => s.balance)
   const totalCost = cardCount * betAmount
-
-  const extraCost = extraOptions.length > 0
-    ? Math.round(extraOptions.reduce((s, o) => s + o.cost, 0) / extraOptions.length)
-    : 0
 
   return (
     <div className="w-full sm:w-[360px] flex-shrink-0 h-full flex flex-col overflow-y-auto px-4 py-4 gap-4"
@@ -238,7 +234,7 @@ export function BingoPanel() {
           <button onClick={buyRandomExtra}
             className="w-full h-10 rounded-xl font-medium text-[11px] transition-all cursor-pointer flex items-center justify-center gap-2"
             style={{ background: 'rgba(234,179,8,0.1)', border: '0.5px solid rgba(234,179,8,0.2)', color: '#eab308' }}>
-            <Sparkles className="w-3.5 h-3.5" /> Pedir Extra ({extraOptions.length > 0 ? `$${formatNum(extraCost)}` : 'Gratis'})
+            <Sparkles className="w-3.5 h-3.5" /> Pedir Extra (${formatNum(extraCost)})
           </button>
 
           {!claimed && pendingWins > 0 && (
