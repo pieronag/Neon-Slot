@@ -13,6 +13,8 @@ interface UIState {
   winPopupAmount: number
   showWheel: boolean
   showDouble: boolean
+  showMysteryBox: boolean
+  showCardFlip: boolean
   mobilePanelOpen: boolean
   doubleAmount: number
   doubleWon: boolean | null
@@ -34,6 +36,10 @@ interface UIState {
   hideWheel: () => void
   showDoubleGame: (amount: number) => void
   hideDouble: () => void
+  showMystery: () => void
+  hideMystery: () => void
+  showCard: () => void
+  hideCard: () => void
   addNotification: (message: string, type: 'win' | 'info' | 'bonus') => void
   removeNotification: (id: string) => void
   closeTutorial: () => void
@@ -52,6 +58,8 @@ export const useUIStore = create<UIState>((set, get) => ({
   winPopupAmount: 0,
   showWheel: false,
   showDouble: false,
+  showMysteryBox: false,
+  showCardFlip: false,
   mobilePanelOpen: false,
   doubleAmount: 0,
   doubleWon: null,
@@ -70,9 +78,25 @@ export const useUIStore = create<UIState>((set, get) => ({
   setMobilePanel: (v) => set({ mobilePanelOpen: v }),
   showWin: (amount) => set({ showWinPopup: true, winPopupAmount: amount }),
   hideWin: () => set({ showWinPopup: false, winPopupAmount: 0 }),
-  hideWheel: () => set({ showWheel: false }),
+  hideWheel: () => {
+    set({ showWheel: false })
+    import('./gameStore').then(m => m.useGameStore.getState().resumeAutoSpin())
+  },
   showDoubleGame: (amount) => set({ showDouble: true, doubleAmount: amount, doubleWon: null }),
-  hideDouble: () => set({ showDouble: false, doubleAmount: 0, doubleWon: null }),
+  hideDouble: () => {
+    set({ showDouble: false, doubleAmount: 0, doubleWon: null })
+    import('./gameStore').then(m => m.useGameStore.getState().resumeAutoSpin())
+  },
+  showMystery: () => set({ showMysteryBox: true }),
+  hideMystery: () => {
+    set({ showMysteryBox: false })
+    import('./gameStore').then(m => m.useGameStore.getState().resumeAutoSpin())
+  },
+  showCard: () => set({ showCardFlip: true }),
+  hideCard: () => {
+    set({ showCardFlip: false })
+    import('./gameStore').then(m => m.useGameStore.getState().resumeAutoSpin())
+  },
 
   addNotification: (message, type) => {
     const id = Date.now().toString()

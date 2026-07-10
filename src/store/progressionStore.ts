@@ -35,24 +35,24 @@ const STREAK_BONUS = [0, 0, 50, 100, 200, 300, 500, 1000]
 const LEVEL_XP = (l: number) => l * l * 100
 
 const ALL_ACHIEVEMENTS: Achievement[] = [
-  { id: 'first_spin', name: 'Primer giro', description: 'Gira una vez', icon: '🎰', condition: s => s.sessionSpins >= 1, reward: 200, xp: 50 },
-  { id: 'spin_25', name: '25 giros', description: 'Gira 25 veces', icon: '🎰', condition: s => s.sessionSpins >= 25, reward: 500, xp: 100 },
-  { id: 'spin_100', name: '100 giros', description: 'Gira 100 veces', icon: '💎', condition: s => s.sessionSpins >= 100, reward: 1500, xp: 300 },
-  { id: 'spin_500', name: '500 giros', description: 'Gira 500 veces', icon: '🔥', condition: s => s.sessionSpins >= 500, reward: 5000, xp: 1000 },
-  { id: 'spin_1000', name: '1000 giros', description: 'Gira 1000 veces', icon: '🔥', condition: s => s.sessionSpins >= 1000, reward: 10000, xp: 2000 },
-  { id: 'win_10', name: '+10 ganado', description: 'Gana 10 monedas', icon: '💰', condition: s => s.sessionWins >= 10, reward: 300, xp: 50 },
-  { id: 'win_100', name: '+100 ganado', description: 'Gana 100 monedas', icon: '💰', condition: s => s.sessionWins >= 100, reward: 1000, xp: 100 },
-  { id: 'win_1000', name: '+1000 ganado', description: 'Gana 1000 monedas', icon: '💵', condition: s => s.sessionWins >= 1000, reward: 3000, xp: 300 },
-  { id: 'win_5000', name: '+5000 ganado', description: 'Gana 5000 monedas', icon: '👑', condition: s => s.sessionWins >= 5000, reward: 10000, xp: 1000 },
-  { id: 'win_10000', name: '+10000 ganado', description: 'Gana 10000 monedas', icon: '👑', condition: s => s.sessionWins >= 10000, reward: 20000, xp: 3000 },
-  { id: 'jackpot_win', name: 'Jackpot', description: 'Gana el pozo global', icon: '🏆', condition: () => false, reward: 50000, xp: 5000 },
-  { id: 'level_5', name: 'Nivel 5', description: 'Alcanza nivel 5', icon: '⭐', condition: s => s.level >= 5, reward: 1000, xp: 200 },
-  { id: 'level_10', name: 'Nivel 10', description: 'Alcanza nivel 10', icon: '⭐', condition: s => s.level >= 10, reward: 3000, xp: 500 },
-  { id: 'level_25', name: 'Nivel 25', description: 'Alcanza nivel 25', icon: '🏆', condition: s => s.level >= 25, reward: 15000, xp: 2000 },
-  { id: 'login_3', name: '3 días', description: 'Inicia sesión 3 días seguidos', icon: '📅', condition: s => s.dailyLoginDay >= 3, reward: 500, xp: 200 },
-  { id: 'login_7', name: '7 días', description: 'Inicia sesión 7 días seguidos', icon: '📅', condition: s => s.dailyLoginDay >= 7, reward: 3000, xp: 1000 },
-  { id: 'mission_1', name: 'Cumplidor', description: 'Completa 1 meta', icon: '📋', condition: s => s.dailyMissions.filter(m => m.completed).length >= 1, reward: 200, xp: 100 },
-  { id: 'mission_5', name: 'Entusiasta', description: 'Completa 5 metas', icon: '📋', condition: s => s.dailyMissions.filter(m => m.completed).length >= 5, reward: 1000, xp: 300 },
+  { id: 'first_spin', name: 'Primer Giro', description: 'Gira una Vez', icon: '🎰', condition: s => s.sessionSpins >= 1, reward: 200, xp: 50 },
+  { id: 'spin_25', name: '25 Giros', description: 'Gira 25 Veces', icon: '🎰', condition: s => s.sessionSpins >= 25, reward: 500, xp: 100 },
+  { id: 'spin_100', name: '100 Giros', description: 'Gira 100 Veces', icon: '💎', condition: s => s.sessionSpins >= 100, reward: 1500, xp: 300 },
+  { id: 'spin_500', name: '500 Giros', description: 'Gira 500 Veces', icon: '🔥', condition: s => s.sessionSpins >= 500, reward: 5000, xp: 1000 },
+  { id: 'spin_1000', name: '1000 Giros', description: 'Gira 1000 Veces', icon: '🔥', condition: s => s.sessionSpins >= 1000, reward: 10000, xp: 2000 },
+  { id: 'win_10', name: '+10 Ganado', description: 'Gana 10 Monedas', icon: '💰', condition: s => s.sessionWins >= 10, reward: 300, xp: 50 },
+  { id: 'win_100', name: '+100 Ganado', description: 'Gana 100 Monedas', icon: '💰', condition: s => s.sessionWins >= 100, reward: 1000, xp: 100 },
+  { id: 'win_1000', name: '+1000 Ganado', description: 'Gana 1000 Monedas', icon: '💵', condition: s => s.sessionWins >= 1000, reward: 3000, xp: 300 },
+  { id: 'win_5000', name: '+5000 Ganado', description: 'Gana 5000 Monedas', icon: '👑', condition: s => s.sessionWins >= 5000, reward: 10000, xp: 1000 },
+  { id: 'win_10000', name: '+10000 Ganado', description: 'Gana 10000 Monedas', icon: '👑', condition: s => s.sessionWins >= 10000, reward: 20000, xp: 3000 },
+  { id: 'jackpot_win', name: 'Jackpot', description: 'Gana el Pozo Global', icon: '🏆', condition: () => false, reward: 50000, xp: 5000 },
+  { id: 'level_5', name: 'Nivel 5', description: 'Alcanza Nivel 5', icon: '⭐', condition: s => s.level >= 5, reward: 1000, xp: 200 },
+  { id: 'level_10', name: 'Nivel 10', description: 'Alcanza Nivel 10', icon: '⭐', condition: s => s.level >= 10, reward: 3000, xp: 500 },
+  { id: 'level_25', name: 'Nivel 25', description: 'Alcanza Nivel 25', icon: '🏆', condition: s => s.level >= 25, reward: 15000, xp: 2000 },
+  { id: 'login_3', name: '3 Días', description: 'Inicia Sesión 3 Días Seguidos', icon: '📅', condition: s => s.dailyLoginDay >= 3, reward: 500, xp: 200 },
+  { id: 'login_7', name: '7 Días', description: 'Inicia Sesión 7 Días Seguidos', icon: '📅', condition: s => s.dailyLoginDay >= 7, reward: 3000, xp: 1000 },
+  { id: 'mission_1', name: 'Cumplidor', description: 'Completa 1 Meta', icon: '📋', condition: s => s.dailyMissions.filter(m => m.completed).length >= 1, reward: 200, xp: 100 },
+  { id: 'mission_5', name: 'Entusiasta', description: 'Completa 5 Metas', icon: '📋', condition: s => s.dailyMissions.filter(m => m.completed).length >= 5, reward: 1000, xp: 300 },
 ]
 
 // Deduplicate by id
@@ -62,9 +62,9 @@ const UNIQUE_ACHIEVEMENTS = Array.from(ACHIEVEMENT_MAP.values())
 
 function generateDailyMissions(): DailyMission[] {
   const missions: DailyMission[] = [
-    { id: `spin_${Date.now()}`, name: 'Seguir girando', description: 'Gira 20 veces', target: 20, progress: 0, reward: 200, completed: false },
-    { id: `win_${Date.now()}`, name: 'Ganar mucho', description: 'Gana 200 monedas', target: 200, progress: 0, reward: 300, completed: false },
-    { id: `bonus_${Date.now()}`, name: 'Cazabonos', description: 'Activa 1 bonificación', target: 1, progress: 0, reward: 500, completed: false },
+    { id: `spin_${Date.now()}`, name: 'Seguir Girando', description: 'Gira 20 Veces', target: 20, progress: 0, reward: 200, completed: false },
+    { id: `win_${Date.now()}`, name: 'Ganar Mucho', description: 'Gana 200 Monedas', target: 200, progress: 0, reward: 300, completed: false },
+    { id: `bonus_${Date.now()}`, name: 'Cazabonos', description: 'Activa 1 Bonificación', target: 1, progress: 0, reward: 500, completed: false },
   ]
   return missions
 }

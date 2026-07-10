@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { X, Trophy, DollarSign, TrendingUp, ArrowUp, ArrowDown, LogOut, Wallet } from 'lucide-react'
+import { X, Trophy, DollarSign, TrendingUp, LogOut, Gamepad2 } from 'lucide-react'
 import { useUIStore } from '../../store/uiStore'
 import { useAuthStore } from '../../store/authStore'
 import { useProgressionStore } from '../../store/progressionStore'
@@ -8,12 +8,12 @@ const formatNum = (n: number) => Math.round(n).toLocaleString('es-CL')
 
 export function ProfileModal() {
   const { showProfile, setShowProfile } = useUIStore()
-  const { user, profile, logout, transactions } = useAuthStore()
-  const { level } = useProgressionStore()
-
+  const { user, profile, logout } = useAuthStore()
+  const { level, xp } = useProgressionStore()
   if (!showProfile || !user || !profile) return null
 
   const totalBets = profile.totalBets || 1
+  const nextLevelXP = (level + 1) * (level + 1) * 100
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -41,19 +41,26 @@ export function ProfileModal() {
           </div>
           <h2 className="text-base font-semibold text-white">{profile.displayName}</h2>
           <p className="text-xs text-white/40 mt-1">{user.email}</p>
-          <div className="grid grid-cols-3 gap-3 mt-4">
-            <div className="px-3 py-2.5 rounded-lg" style={{ border: '0.5px solid rgba(255,255,255,0.06)' }}>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-4">
+            <div className="px-2 py-2.5 rounded-lg" style={{ border: '0.5px solid rgba(255,255,255,0.06)' }}>
               <div className="text-[10px] text-white/40 uppercase">Nivel</div>
               <div className="text-lg font-bold text-white font-mono mt-1">{level}</div>
             </div>
-            <div className="px-3 py-2.5 rounded-lg" style={{ border: '0.5px solid rgba(255,255,255,0.06)' }}>
+            <div className="px-2 py-2.5 rounded-lg" style={{ border: '0.5px solid rgba(255,255,255,0.06)' }}>
               <div className="text-[10px] text-white/40 uppercase">Saldo</div>
-              <div className="text-lg font-bold text-white font-mono mt-1">{formatNum(profile.balance)}</div>
+              <div className="text-lg font-bold text-white font-mono mt-1">${formatNum(profile.balance)}</div>
             </div>
-            <div className="px-3 py-2.5 rounded-lg" style={{ border: '0.5px solid rgba(255,255,255,0.06)' }}>
+            <div className="px-2 py-2.5 rounded-lg" style={{ border: '0.5px solid rgba(255,255,255,0.06)' }}>
               <div className="text-[10px] text-white/40 uppercase">Giros</div>
               <div className="text-lg font-bold text-white font-mono mt-1">{profile.totalSpins}</div>
             </div>
+            <div className="px-2 py-2.5 rounded-lg" style={{ border: '0.5px solid rgba(255,255,255,0.06)' }}>
+              <div className="text-[10px] text-white/40 uppercase">XP</div>
+              <div className="text-lg font-bold text-white font-mono mt-1">{xp}</div>
+            </div>
+          </div>
+          <div className="mt-3 h-1 bg-white/[0.06] rounded-full overflow-hidden">
+            <div className="h-full rounded-full bg-white transition-all" style={{ width: `${Math.min(100, (xp / Math.max(1, nextLevelXP)) * 100)}%` }} />
           </div>
         </div>
 
@@ -61,67 +68,43 @@ export function ProfileModal() {
           <div className="p-4 rounded-xl" style={{ border: '0.5px solid rgba(255,255,255,0.06)' }}>
             <div className="flex items-center gap-2 mb-1">
               <DollarSign className="w-4 h-4 text-green-400/60" />
-              <span className="text-[10px] text-white/40">Ganado</span>
+              <span className="text-[10px] text-white/40">Total ganado</span>
             </div>
-            <div className="text-lg font-bold text-green-400 font-mono">{formatNum(profile.totalWins)}</div>
+            <div className="text-lg font-bold text-green-400 font-mono">${formatNum(profile.totalWins)}</div>
           </div>
           <div className="p-4 rounded-xl" style={{ border: '0.5px solid rgba(255,255,255,0.06)' }}>
             <div className="flex items-center gap-2 mb-1">
               <TrendingUp className="w-4 h-4 text-red-400/60" />
-              <span className="text-[10px] text-white/40">Apostado</span>
+              <span className="text-[10px] text-white/40">Total apostado</span>
             </div>
-            <div className="text-lg font-bold text-red-400 font-mono">{formatNum(totalBets)}</div>
+            <div className="text-lg font-bold text-red-400 font-mono">${formatNum(totalBets)}</div>
           </div>
           <div className="p-4 rounded-xl" style={{ border: '0.5px solid rgba(255,255,255,0.06)' }}>
             <div className="flex items-center gap-2 mb-1">
-              <Wallet className="w-4 h-4 text-white/40" />
-              <span className="text-[10px] text-white/40">Neto</span>
+              <Gamepad2 className="w-4 h-4 text-green-400/60" />
+              <span className="text-[10px] text-white/40">Minijuegos Ganado</span>
             </div>
-            <div className={`text-lg font-bold font-mono ${profile.totalWins - totalBets >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-              {formatNum(profile.totalWins - totalBets)}
-            </div>
+            <div className="text-lg font-bold text-green-400 font-mono">${formatNum(profile.minigameWins)}</div>
           </div>
           <div className="p-4 rounded-xl" style={{ border: '0.5px solid rgba(255,255,255,0.06)' }}>
             <div className="flex items-center gap-2 mb-1">
               <Trophy className="w-4 h-4 text-white/40" />
-              <span className="text-[10px] text-white/40">Mayor win</span>
+              <span className="text-[10px] text-white/40">Mayor ganancia</span>
             </div>
-            <div className="text-lg font-bold text-white font-mono">{formatNum(profile.biggestWin)}</div>
+            <div className="text-lg font-bold text-white font-mono">${formatNum(profile.biggestWin)}</div>
           </div>
         </div>
 
-        <div className="rounded-xl mb-4" style={{ border: '0.5px solid rgba(255,255,255,0.06)' }}>
-          <div className="p-3 border-b border-white/[0.04] flex items-center justify-between">
-            <span className="text-xs text-white/40">Movimientos</span>
-            <span className="text-[10px] text-white/30">{transactions.length} registros</span>
+        {profile.lastConnection && (
+          <div className="mb-4 text-center">
+            <span className="text-[10px] text-white/30">
+              Última conexión: {new Date(profile.lastConnection).toLocaleString('es-CL', {
+                day: '2-digit', month: '2-digit', year: 'numeric',
+                hour: '2-digit', minute: '2-digit'
+              })}
+            </span>
           </div>
-          <div className="divide-y divide-white/[0.04] max-h-52 overflow-y-auto">
-            {transactions.length === 0 && (
-              <div className="p-4 text-center text-xs text-white/30">Sin movimientos aún</div>
-            )}
-            {transactions.slice(0, 20).map((tx: any) => {
-              const isUp = tx.amount > 0
-              return (
-                <div key={tx.id} className="flex items-center justify-between px-4 py-2.5">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${isUp ? 'bg-green-500/10' : 'bg-red-500/10'}`}>
-                      {isUp ? <ArrowUp className="w-3.5 h-3.5 text-green-400" /> : <ArrowDown className="w-3.5 h-3.5 text-red-400" />}
-                    </div>
-                    <div className="min-w-0">
-                      <div className="text-xs text-white/70 truncate max-w-[160px]">{tx.description}</div>
-                      <div className="text-[9px] text-white/30 mt-0.5">
-                        {new Date(tx.createdAt).toLocaleString('es-CL', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
-                      </div>
-                    </div>
-                  </div>
-                  <span className={`text-xs font-mono font-medium flex-shrink-0 ml-3 ${isUp ? 'text-green-400' : 'text-red-400'}`}>
-                    {isUp ? '+' : ''}{formatNum(tx.amount)}
-                  </span>
-                </div>
-              )
-            })}
-          </div>
-        </div>
+        )}
 
         <button onClick={() => { logout(); window.location.href = '/login' }}
           className="w-full h-11 rounded-xl text-sm text-red-400 hover:text-red-300 bg-white/[0.03] hover:bg-white/[0.05] transition-all cursor-pointer flex items-center justify-center gap-2 font-medium">

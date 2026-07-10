@@ -27,16 +27,16 @@ export function Header() {
           </span>
         </div>
 
-        <div style={{ border: '0.5px solid rgba(255,215,0,0.15)', background: 'rgba(255,215,0,0.04)' }} className="hidden sm:flex items-center gap-2.5 px-4 py-1.5 rounded-lg">
+        <div style={{ border: '0.5px solid rgba(255,215,0,0.15)', background: 'rgba(255,215,0,0.04)' }} className="flex items-center gap-2 px-3 sm:px-4 py-1 sm:py-1.5 rounded-lg">
           <div className="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse shadow-[0_0_6px_rgba(255,215,0,0.6)]" />
           <div className="text-center">
-            <div className="text-[8px] text-yellow-600/60 uppercase tracking-wider font-semibold">Pozo global</div>
-            <div className="text-sm font-bold text-yellow-400 font-mono">{formatNum(globalJackpot)}</div>
+            <div className="text-[7px] sm:text-[8px] text-yellow-600/60 uppercase tracking-wider font-semibold">Pozo global</div>
+            <div className="text-[11px] sm:text-sm font-bold text-yellow-400 font-mono">${formatNum(globalJackpot)}</div>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-sm text-white/80 font-mono font-medium">{formatNum(balance)}</span>
+          <span className="text-sm text-white/80 font-mono font-medium">${formatNum(balance)}</span>
 
           <button onClick={() => setMobilePanel(true)} className="flex sm:hidden items-center justify-center w-9 h-9 rounded-lg bg-white/[0.04] border border-white/[0.06] text-white/60 hover:text-white transition-all cursor-pointer">
             <Menu className="w-4 h-4" />

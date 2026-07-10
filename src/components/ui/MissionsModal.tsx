@@ -28,7 +28,7 @@ export function MissionsModal() {
             style={{ background: '#050505', border: '0.5px solid rgba(255,255,255,0.06)', boxShadow: '0 25px 60px rgba(0,0,0,0.6)' }}
           >
             <div className="flex items-center justify-between mb-5">
-              <h2 className="text-sm font-semibold text-white">Metas diarias</h2>
+              <h2 className="text-sm font-semibold text-white">Metas Diarias</h2>
               <button onClick={toggleMissions} className="w-8 h-8 rounded-lg flex items-center justify-center text-white/30 hover:text-white hover:bg-white/[0.04] transition-all cursor-pointer">
                 <X className="w-4 h-4" />
               </button>
@@ -50,7 +50,7 @@ export function MissionsModal() {
                       </div>
                       <div className="text-right flex-shrink-0 ml-3">
                         <div className="text-xs font-bold text-white font-mono">{m.reward}</div>
-                        <div className="text-[9px] text-white/30">monedas</div>
+                        <div className="text-[9px] text-white/30">Monedas</div>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">

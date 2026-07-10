@@ -9,6 +9,8 @@ import { SidePanel } from '../components/casino/SidePanel'
 import { WinPopup } from '../components/ui/WinPopup'
 import { FortuneWheel } from '../components/ui/FortuneWheel'
 import { DoubleOrNothing } from '../components/ui/DoubleOrNothing'
+import { MysteryBox } from '../components/ui/MysteryBox'
+import { CardFlip } from '../components/ui/CardFlip'
 import { DailyLogin } from '../components/ui/DailyLogin'
 import { LevelUp } from '../components/ui/LevelUp'
 import { MissionsModal } from '../components/ui/MissionsModal'
@@ -101,6 +103,8 @@ export function GamePage() {
       <WinPopup />
       <FortuneWheel />
       <DoubleOrNothing />
+      <MysteryBox />
+      <CardFlip />
       <DailyLogin />
       <LevelUp />
       <MissionsModal />

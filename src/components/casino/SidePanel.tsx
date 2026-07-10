@@ -17,7 +17,7 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
 }
 
 export function SidePanel() {
-  const { spin, isSpinning, balance, betAmount, freeSpinsRemaining, currentMultiplier, gameMode, autoSpinCount, lossStreak, winStreak, setBet, setGameMode } = useGameStore()
+  const { spin, isSpinning, balance, betAmount, freeSpinsRemaining, gameMode, autoSpinCount, lossStreak, winStreak, setBet, setGameMode, bonusSpins, bonusMult } = useGameStore()
   const { toggleAchievements, toggleMissions } = useUIStore()
 
   const { achievements, dailyMissions, level, xp } = useProgressionStore()
@@ -111,14 +111,14 @@ export function SidePanel() {
       <div className="mt-auto space-y-1.5">
         {freeSpinsRemaining > 0 && (
           <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-white/[0.03] border border-white/[0.06]">
-            <span className="text-[10px] text-white/40">Giros gratis</span>
+            <span className="text-[10px] text-white/40">Giros Gratis</span>
             <span className="text-xs text-white font-mono font-medium">{freeSpinsRemaining}</span>
           </div>
         )}
-        {currentMultiplier > 1 && (
-          <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-white/[0.03] border border-white/[0.06]">
-            <span className="text-[10px] text-white/40">Multiplicador</span>
-            <span className="text-xs text-white font-mono font-medium">{currentMultiplier}x</span>
+        {bonusSpins > 0 && (
+          <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-white/[0.03] border border-white/[0.06]" style={{ borderColor: 'rgba(255,215,0,0.15)', background: 'rgba(255,215,0,0.04)' }}>
+            <span className="text-[10px] text-yellow-400/80 font-semibold">Bonificación x{bonusMult}</span>
+            <span className="text-xs text-yellow-400 font-mono font-medium">{bonusSpins} giros</span>
           </div>
         )}
         {lossStreak >= 5 && (

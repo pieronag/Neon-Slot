@@ -16,7 +16,7 @@ function calcWinsOnReels(
   betAmount: number,
   multiplier: number,
   expandingWild: string | null
-): { wins: SpinResult['wins']; totalPayout: number; scatterCount: number; winningPositions: Set<string>; bonusTriggered: boolean; freeSpinsAwarded: number } {
+): { wins: SpinResult['wins']; totalPayout: number; scatterCount: number; winningPositions: Set<string>; bonusTriggered: boolean; bonusMultiplier: number } {
   const paylines = getPaylines()
   const wins: SpinResult['wins'] = []
   let totalPayout = 0
@@ -61,7 +61,7 @@ function calcWinsOnReels(
   }
 
   let bonusTriggered = false
-  let freeSpinsAwarded = 0
+  let bonusMultiplier = 1
 
   if (scatterCount >= 3) {
     const s = getSymbol(SCATTER_ID)
@@ -70,10 +70,10 @@ function calcWinsOnReels(
     totalPayout += payout
     wins.push({ paylineId: -1, symbolId: SCATTER_ID, count: scatterCount, payout, positions: [] })
     bonusTriggered = true
-    freeSpinsAwarded = scatterCount >= 5 ? 15 : scatterCount >= 4 ? 12 : 8
+    bonusMultiplier = scatterCount >= 5 ? 10 : scatterCount >= 4 ? 5 : 2
   }
 
-  return { wins, totalPayout, scatterCount, winningPositions, bonusTriggered, freeSpinsAwarded }
+  return { wins, totalPayout, scatterCount, winningPositions, bonusTriggered, bonusMultiplier }
 }
 
 function applyAvalanche(reels: string[][]): string[][] {
@@ -109,7 +109,7 @@ export function calculateWins(
   let totalPayout = 0
   let avalancheCount = 0
   let bonusTriggered = false
-  let freeSpinsAwarded = 0
+  let bonusMultiplier = 1
   let scatterTotal = 0
 
   while (true) {
@@ -119,7 +119,7 @@ export function calculateWins(
       allWins.push(...result.wins)
       totalPayout += result.totalPayout
       scatterTotal += result.scatterCount
-      if (result.bonusTriggered) { bonusTriggered = true; freeSpinsAwarded = Math.max(freeSpinsAwarded, result.freeSpinsAwarded) }
+      if (result.bonusTriggered) { bonusTriggered = true; bonusMultiplier = result.bonusMultiplier }
     }
 
     if (enableAvalanche && result.winningPositions.size > 0) {
@@ -141,13 +141,15 @@ export function calculateWins(
     break
   }
 
+  const finalPayout = bonusTriggered ? Math.round(totalPayout * bonusMultiplier) : Math.round(totalPayout)
+
   return {
     reels: currentReels,
     wins: allWins,
-    totalPayout: Math.round(totalPayout),
+    totalPayout: finalPayout,
     bonusTriggered,
     scatterCount: scatterTotal,
-    freeSpinsAwarded,
+    bonusMultiplier: bonusTriggered ? bonusMultiplier : 1,
     multiplier: mult,
     expandingWild: wild,
     avalancheCount,

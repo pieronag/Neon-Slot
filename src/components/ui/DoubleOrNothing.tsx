@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { X, CircleDollarSign } from 'lucide-react'
+import { CircleDollarSign } from 'lucide-react'
 import { useUIStore } from '../../store/uiStore'
 import { useGameStore } from '../../store/gameStore'
+import { useAuthStore } from '../../store/authStore'
 import { Button } from '../ui/Button'
 
 export function DoubleOrNothing() {
@@ -10,6 +11,8 @@ export function DoubleOrNothing() {
   const [state, setState] = useState<'choose' | 'flipping' | 'result'>('choose')
   const [won, setWon] = useState(false)
   const [choice, setChoice] = useState<'C' | 'X'>('C')
+
+  useEffect(() => { if (showDouble) { setState('choose'); setWon(false) } }, [showDouble])
 
   const handleChoice = (c: 'C' | 'X') => {
     if (state !== 'choose') return
@@ -22,11 +25,15 @@ export function DoubleOrNothing() {
       setWon(win)
       setState('result')
       if (win) {
-        useGameStore.setState({ balance: useGameStore.getState().balance + doubleAmount })
-        addNotification(`Doble o nada: Ganaste +${Math.round(doubleAmount).toLocaleString('es-CL')}`, 'win')
+        const nb = useGameStore.getState().balance + doubleAmount
+        useGameStore.setState({ balance: nb })
+        useAuthStore.getState().addMinigameResult('win', doubleAmount, nb)
+        addNotification(`Doble o Nada: Ganaste +${Math.round(doubleAmount).toLocaleString('es-CL')}`, 'win')
       } else {
-        useGameStore.setState({ balance: useGameStore.getState().balance - doubleAmount })
-        addNotification(`Doble o nada: Perdiste ${Math.round(doubleAmount).toLocaleString('es-CL')}`, 'info')
+        const nb = useGameStore.getState().balance - doubleAmount
+        useGameStore.setState({ balance: nb })
+        useAuthStore.getState().addMinigameResult('loss', doubleAmount, nb)
+        addNotification(`Doble o Nada: Perdiste ${Math.round(doubleAmount).toLocaleString('es-CL')}`, 'info')
       }
     }, 1800)
   }
@@ -44,7 +51,7 @@ export function DoubleOrNothing() {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-        className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={handleClose} />
+        className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
 
       <motion.div
         initial={{ scale: 0.95, opacity: 0, y: 20 }}
@@ -54,11 +61,8 @@ export function DoubleOrNothing() {
         className="relative w-full max-w-sm rounded-2xl p-6"
         style={{ background: '#050505', border: '0.5px solid rgba(255,255,255,0.06)', boxShadow: '0 25px 60px rgba(0,0,0,0.6)' }}
       >
-        <div className="flex items-center justify-between mb-5">
-          <h2 className="text-sm font-semibold text-white">Doble o nada</h2>
-          <button onClick={handleClose} className="w-8 h-8 rounded-lg flex items-center justify-center text-white/30 hover:text-white hover:bg-white/[0.04] transition-all cursor-pointer">
-            <X className="w-4 h-4" />
-          </button>
+        <div className="flex items-center justify-center mb-5">
+          <h2 className="text-sm font-semibold text-white">Doble o Nada</h2>
         </div>
 
         <div className="text-center mb-6">
@@ -123,17 +127,19 @@ export function DoubleOrNothing() {
                 Cruz
               </button>
             </div>
-            <button onClick={handleClose}
-              className="w-full h-10 rounded-xl text-xs text-white/30 hover:text-white/60 transition-all cursor-pointer">
-              Rechazar y cobrar
-            </button>
+
           </div>
         )}
 
         {state === 'result' && (
-          <div className="text-center space-y-3 mt-2">
-            <div className={`text-sm font-semibold ${won ? 'text-yellow-400' : 'text-white/50'}`}>
-              {won ? `+${Math.round(doubleAmount).toLocaleString('es-CL')}` : `-${Math.round(doubleAmount).toLocaleString('es-CL')}`}
+          <div className="text-center">
+            <div className="mb-4 text-center" style={{ border: '0.5px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', padding: '10px 16px' }}>
+              <div className={`text-base font-semibold ${won ? 'text-yellow-400' : 'text-white/50'}`}>
+                {won ? `+${Math.round(doubleAmount).toLocaleString('es-CL')}` : `-${Math.round(doubleAmount).toLocaleString('es-CL')}`}
+              </div>
+              <div className={`text-[11px] mt-0.5 ${won ? 'text-yellow-400/60' : 'text-white/30'}`}>
+                {won ? 'Ganaste!' : 'Perdiste'}
+              </div>
             </div>
             <Button variant={won ? 'primary' : 'secondary'} size="md" fullWidth onClick={handleClose} className="h-11">
               {won ? 'Reclamar' : 'Cerrar'}

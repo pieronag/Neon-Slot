@@ -27,10 +27,13 @@ export interface UserProfile {
   totalWins: number
   totalBets: number
   biggestWin: number
+  minigameWins: number
+  minigameLosses: number
   achievements: string[]
   dailyMissions?: DailyMissionData[]
   dailyLoginDay?: number
   lastLoginDate?: string
+  lastConnection?: string
   createdAt: string
 }
 
@@ -51,6 +54,7 @@ interface AuthState {
   unsubscribeJackpot: (() => void) | null
   updateProfile: (data: Partial<UserProfile>) => Promise<void>
   addTransaction: (data: Omit<Transaction, 'id' | 'createdAt'>) => Promise<void>
+  addMinigameResult: (type: 'win' | 'loss', amount: number, balance: number) => Promise<void>
   loadTransactions: (limitCount?: number) => Promise<void>
   loadGlobalJackpot: () => Promise<void>
   addToJackpot: (amount: number) => Promise<void>
@@ -84,7 +88,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const cred = await createUserWithEmailAndPassword(auth, email, password)
       const profile: UserProfile = {
         displayName, level: 1, xp: 0, balance: 10000,
-        totalSpins: 0, totalWins: 0, totalBets: 0, biggestWin: 0,
+        totalSpins: 0, totalWins: 0, totalBets: 0, biggestWin: 0, minigameWins: 0, minigameLosses: 0,
         achievements: [], createdAt: new Date().toISOString(),
       }
       await setDoc(doc(db, 'usuarios', cred.user.uid), profile)
@@ -116,12 +120,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         const profile: UserProfile = {
           displayName: user.email?.split('@')[0] || 'Jugador',
           level: 1, xp: 0, balance: 10000,
-          totalSpins: 0, totalWins: 0, totalBets: 0, biggestWin: 0,
+        totalSpins: 0, totalWins: 0, totalBets: 0, biggestWin: 0, minigameWins: 0, minigameLosses: 0,
           achievements: [], createdAt: new Date().toISOString(),
         }
         await setDoc(doc(db, 'usuarios', user.uid), profile)
         set({ profile })
       }
+      await setDoc(doc(db, 'usuarios', user.uid), { lastConnection: new Date().toISOString() }, { merge: true })
       const unsub = onSnapshot(doc(db, 'usuarios', user.uid), async (snap) => {
         if (!snap.exists()) return
         const data = snap.data() as UserProfile
@@ -169,6 +174,21 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       await addDoc(collection(db, 'usuarios', user.uid, 'transacciones'), { ...data, createdAt: new Date().toISOString() })
     } catch (e) { console.error('Error guardando transacción:', e) }
+  },
+
+  addMinigameResult: async (type: 'win' | 'loss', amount: number, newBalance: number) => {
+    const { profile } = get()
+    if (!profile) return
+    const mw = profile.minigameWins ?? 0
+    const ml = profile.minigameLosses ?? 0
+    const update = type === 'win'
+      ? { minigameWins: mw + amount, balance: newBalance }
+      : { minigameLosses: ml + amount, balance: newBalance }
+    set({ profile: { ...profile, ...update } as UserProfile })
+    try {
+      const { user } = get()
+      if (user) await setDoc(doc(db, 'usuarios', user.uid), update, { merge: true })
+    } catch (e) { console.error('Error guardando minijuego:', e) }
   },
 
   loadTransactions: async (limitCount = 100) => {

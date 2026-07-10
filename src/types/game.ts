@@ -9,7 +9,7 @@ export interface WinResult {
 }
 export interface SpinResult {
   reels: string[][]; wins: WinResult[]; totalPayout: number;
-  bonusTriggered: boolean; scatterCount: number; freeSpinsAwarded: number;
+  bonusTriggered: boolean; scatterCount: number; bonusMultiplier: number;
   multiplier: number; expandingWild: string | null;
   avalancheCount: number; avalancheWins: WinResult[][];
 }

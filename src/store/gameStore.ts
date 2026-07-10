@@ -18,10 +18,13 @@ interface GameState {
   lastResult: SpinResult | null
   freeSpinsRemaining: number
   currentMultiplier: number
+  bonusSpins: number
+  bonusMult: number
   gameMode: GameMode
   autoSpinCount: number
   lossStreak: number
   winStreak: number
+  autoPausedCount: number
   totalSpins: number
   totalWins: number
   totalBets: number
@@ -33,6 +36,7 @@ interface GameState {
   addFreeSpins: (count: number) => void
   setGameMode: (mode: GameMode) => void
   stopAutoSpin: () => void
+  resumeAutoSpin: () => void
   resetGame: () => void
 }
 
@@ -44,10 +48,13 @@ export const useGameStore = create<GameState>((set, get) => ({
   lastResult: null,
   freeSpinsRemaining: 0,
   currentMultiplier: 1,
+  bonusSpins: 0,
+  bonusMult: 1,
   gameMode: 'normal',
   autoSpinCount: 0,
   lossStreak: 0,
   winStreak: 0,
+  autoPausedCount: 0,
   totalSpins: 0,
   totalWins: 0,
   totalBets: 0,
@@ -65,7 +72,8 @@ export const useGameStore = create<GameState>((set, get) => ({
     const cost = freeSpinsRemaining > 0 ? 0 : betAmount
     soundManager.play('spin')
 
-    const result = spinEngine(betAmount, freeSpinsRemaining > 0, currentMultiplier, lossStreak)
+    const effMult = get().bonusSpins > 0 ? get().bonusMult : 1
+    const result = spinEngine(betAmount, freeSpinsRemaining > 0, effMult, lossStreak)
     set({ isSpinning: true, reelsResult: result.reels, lastResult: result })
     const duration = gameMode === 'turbo' ? SPIN_DURATION.turbo : SPIN_DURATION.normal
 
@@ -91,26 +99,39 @@ export const useGameStore = create<GameState>((set, get) => ({
         useProgressionStore.getState().addAchievement('jackpot_win')
       }
 
+      const newBonusSpins = result.bonusTriggered ? 25 : Math.max(0, get().bonusSpins - (get().bonusSpins > 0 ? 1 : 0))
+      const newBonusMult = result.bonusTriggered ? (result.scatterCount >= 5 ? 10 : result.scatterCount >= 4 ? 5 : 2) : get().bonusMult
+      const baseForBonus = result.bonusTriggered ? Math.round(result.totalPayout / Math.max(1, effMult)) : result.totalPayout
+      const finalWinMult = result.bonusTriggered ? newBonusMult : effMult
+      const totalWinAmount = isWin ? Math.round(baseForBonus * finalWinMult) : 0
+      const bonusExtra = totalWinAmount > 0 && result.bonusTriggered ? totalWinAmount - result.totalPayout : 0
+      const finalBalance = newBalance + jackpotPayout + bonusExtra
+
       set({
-        balance: newBalance + jackpotPayout,
+        balance: finalBalance,
         isSpinning: false,
         totalSpins: get().totalSpins + 1,
-        totalWins: isWin ? get().totalWins + result.totalPayout + jackpotPayout : get().totalWins,
+        totalWins: get().totalWins + totalWinAmount + jackpotPayout,
         totalBets: get().totalBets + cost,
         biggestWin: Math.max(get().biggestWin, result.totalPayout, jackpotPayout),
         lossStreak: newLossStreak,
         winStreak: newWinStreak,
-        freeSpinsRemaining: result.bonusTriggered ? newFreeSpins + result.freeSpinsAwarded : newFreeSpins,
-        currentMultiplier: result.bonusTriggered ? Math.min(get().currentMultiplier + 1, 5) : currentMultiplier,
+        freeSpinsRemaining: newFreeSpins,
+        currentMultiplier: currentMultiplier,
+        bonusSpins: newBonusSpins,
+        bonusMult: newBonusMult,
         autoSpinCount: gm === 'auto' ? Math.max(0, ac - 1) : 0,
       })
 
       if (result.totalPayout > 0) {
         if (result.totalPayout >= betAmount * 30) soundManager.play('bigwin')
         else soundManager.play('win')
-        useUIStore.getState().showWin(result.totalPayout)
+        useUIStore.getState().showWin(result.totalPayout + bonusExtra)
       }
-      if (result.bonusTriggered) soundManager.play('bonus')
+      if (result.bonusTriggered) {
+        soundManager.play('bonus')
+        useUIStore.getState().addNotification(`Bonificación x${newBonusMult} activada por 25 giros!`, 'bonus')
+      }
 
       useProgressionStore.getState().awardXP(Math.max(1, Math.floor(betAmount / 10)))
       useProgressionStore.getState().checkAchievements()
@@ -122,17 +143,18 @@ export const useGameStore = create<GameState>((set, get) => ({
       if (user && profile) {
         const { level, xp, achievements, dailyMissions, dailyLoginDay, lastLoginDate } = useProgressionStore.getState()
         useAuthStore.getState().updateProfile({
-          balance: newBalance,
+          balance: finalBalance,
           level,
           xp,
           achievements,
           dailyMissions,
           dailyLoginDay,
           lastLoginDate,
-          totalSpins: get().totalSpins + 1,
-          totalBets: get().totalBets + cost,
-          totalWins: isWin ? profile.totalWins + Math.round(result.totalPayout) : profile.totalWins,
+          totalSpins: get().totalSpins,
+          totalBets: get().totalBets,
+          totalWins: isWin ? profile.totalWins + totalWinAmount : profile.totalWins,
           biggestWin: Math.max(profile.biggestWin, Math.round(result.totalPayout)),
+          lastConnection: new Date().toISOString(),
         }).catch(() => {})
 
         if (cost > 0) {
@@ -149,7 +171,7 @@ export const useGameStore = create<GameState>((set, get) => ({
             balanceBefore: newBalance - Math.round(result.totalPayout),
             balanceAfter: newBalance,
             description: result.bonusTriggered
-              ? `Bonificación de ${formatBet(Math.round(result.totalPayout))}`
+              ? `Bonificación x${result.bonusMultiplier}: ${formatBet(Math.round(result.totalPayout))}`
               : `Ganancia de ${formatBet(Math.round(result.totalPayout))}`,
           })
         }
@@ -172,20 +194,35 @@ export const useGameStore = create<GameState>((set, get) => ({
         useUIStore.getState().addNotification(`Expanding Wild: ${sym.name} se expande!`, 'bonus')
       }
 
-      if (newLossStreak >= 8 && isWin === false && newBalance > 0 && gm !== 'auto') {
-        setTimeout(() => {
-          useUIStore.setState({ showWheel: true })
-        }, 600)
+      let willShowMinigame = false
+
+      if (!isWin && newBalance > 0 && Math.random() < 0.15) {
+        willShowMinigame = true
+        setTimeout(() => { useUIStore.setState({ showWheel: true }) }, 600)
       }
 
-      if (isWin && result.totalPayout > 10 && result.totalPayout < betAmount * 50 && gm !== 'auto' && Math.random() < 0.25) {
-        setTimeout(() => {
-          useUIStore.setState({ showDouble: true, doubleAmount: result.totalPayout, doubleWon: null })
-        }, 700)
+      if (isWin && result.totalPayout > betAmount * 0.5) {
+        if (Math.random() < 0.25) {
+          willShowMinigame = true
+          setTimeout(() => { useUIStore.setState({ showDouble: true, doubleAmount: result.totalPayout, doubleWon: null }) }, 700)
+        }
+        if (Math.random() < 0.1) {
+          willShowMinigame = true
+          setTimeout(() => { useUIStore.setState({ showMysteryBox: true }) }, 900)
+        }
+      }
+
+      if (newBalance > 0 && Math.random() < 0.05) {
+        willShowMinigame = true
+        setTimeout(() => { useUIStore.setState({ showCardFlip: true }) }, 800)
       }
 
       if (gm === 'auto' && get().autoSpinCount > 0 && get().balance >= get().betAmount) {
-        setTimeout(() => get().spin(), 400)
+        if (willShowMinigame) {
+          set({ autoPausedCount: get().autoSpinCount, autoSpinCount: 0 })
+        } else {
+          setTimeout(() => get().spin(), 400)
+        }
       }
     }, duration)
 
@@ -199,10 +236,17 @@ export const useGameStore = create<GameState>((set, get) => ({
     else set({ gameMode: mode, autoSpinCount: mode === 'auto' ? 25 : 0 })
   },
   stopAutoSpin: () => set({ gameMode: 'normal', autoSpinCount: 0 }),
+  resumeAutoSpin: () => {
+    const count = get().autoPausedCount
+    if (count > 0) {
+      set({ autoPausedCount: 0, autoSpinCount: count, gameMode: 'auto' })
+      setTimeout(() => get().spin(), 400)
+    }
+  },
   resetGame: () => set({
     balance: 10000, betAmount: 100, isSpinning: false, reelsResult: [], lastResult: null,
-    freeSpinsRemaining: 0, currentMultiplier: 1, lossStreak: 0, winStreak: 0,
+    freeSpinsRemaining: 0, currentMultiplier: 1, bonusSpins: 0, bonusMult: 1, lossStreak: 0, winStreak: 0,
     totalSpins: 0, totalWins: 0, totalBets: 0, biggestWin: 0, lastWinAmount: 0,
-    gameMode: 'normal', autoSpinCount: 0,
+    gameMode: 'normal', autoSpinCount: 0, autoPausedCount: 0,
   }),
 }))
