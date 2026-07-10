@@ -20,8 +20,10 @@ export function Header() {
     <header className="w-full px-5 py-3 flex-shrink-0 relative z-30" style={{ borderBottom: '0.5px solid rgba(255,255,255,0.06)', background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(30px)' }}>
       <div className="max-w-[1500px] mx-auto flex items-center justify-between gap-4">
         <div className="flex items-center gap-2.5">
-          <span className="text-lg font-bold text-white tracking-tight">NEON SLOTS</span>
-          <span className="hidden sm:inline text-[10px] text-white/20 uppercase tracking-wider font-medium ml-1">Casino</span>
+          <button onClick={() => nav('/')} className="flex items-center gap-2 cursor-pointer">
+            <span className="text-lg font-bold text-white tracking-tight">ORION MACHINE</span>
+            <span className="hidden sm:inline text-[10px] text-white/20 uppercase tracking-wider font-medium ml-1">Casino</span>
+          </button>
           <span className="hidden sm:flex items-center gap-1 px-2.5 py-1 rounded-md bg-white/[0.04] text-[11px] text-white/60 font-mono">
             Nvl {level}
           </span>
@@ -43,7 +45,6 @@ export function Header() {
           </button>
 
           <div className="hidden sm:flex items-center gap-2">
-            <div className="h-4 w-px bg-white/[0.06]" />
             <button onClick={toggleMissions} className="flex items-center gap-1.5 px-2.5 h-8 rounded-lg text-[11px] text-white/40 hover:text-white hover:bg-white/[0.04] transition-all cursor-pointer font-medium">
               <Target className="w-3.5 h-3.5" /> Metas
             </button>

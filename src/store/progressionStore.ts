@@ -53,6 +53,9 @@ const ALL_ACHIEVEMENTS: Achievement[] = [
   { id: 'login_7', name: '7 Días', description: 'Inicia Sesión 7 Días Seguidos', icon: '📅', condition: s => s.dailyLoginDay >= 7, reward: 3000, xp: 1000 },
   { id: 'mission_1', name: 'Cumplidor', description: 'Completa 1 Meta', icon: '📋', condition: s => s.dailyMissions.filter(m => m.completed).length >= 1, reward: 200, xp: 100 },
   { id: 'mission_5', name: 'Entusiasta', description: 'Completa 5 Metas', icon: '📋', condition: s => s.dailyMissions.filter(m => m.completed).length >= 5, reward: 1000, xp: 300 },
+  { id: 'first_bingo', name: 'Primer Bingo', description: 'Completa tu primer patrón de bingo', icon: '🎱', condition: () => false, reward: 500, xp: 100 },
+  { id: 'bingo_5', name: '5 Patrones', description: 'Completa 5 patrones de bingo', icon: '🎱', condition: () => false, reward: 2000, xp: 300 },
+  { id: 'bingo_full', name: 'Cartón Lleno', description: 'Completa un cartón completo en bingo', icon: '🎱', condition: () => false, reward: 5000, xp: 1000 },
 ]
 
 // Deduplicate by id
@@ -62,9 +65,10 @@ const UNIQUE_ACHIEVEMENTS = Array.from(ACHIEVEMENT_MAP.values())
 
 function generateDailyMissions(): DailyMission[] {
   const missions: DailyMission[] = [
-    { id: `spin_${Date.now()}`, name: 'Seguir Girando', description: 'Gira 20 Veces', target: 20, progress: 0, reward: 200, completed: false },
-    { id: `win_${Date.now()}`, name: 'Ganar Mucho', description: 'Gana 200 Monedas', target: 200, progress: 0, reward: 300, completed: false },
-    { id: `bonus_${Date.now()}`, name: 'Cazabonos', description: 'Activa 1 Bonificación', target: 1, progress: 0, reward: 500, completed: false },
+    { id: `spin_${Date.now()}`, name: 'Jugar Partidas', description: 'Juega 20 veces entre slots y bingo', target: 20, progress: 0, reward: 200, completed: false },
+    { id: `win_${Date.now()}`, name: 'Ganar Dinero', description: 'Gana 300 monedas en total', target: 300, progress: 0, reward: 300, completed: false },
+    { id: `bonus_${Date.now()}`, name: 'Completar Patrones', description: 'Completa 3 patrones o bonificaciones', target: 3, progress: 0, reward: 500, completed: false },
+    { id: `bingo_${Date.now()}`, name: 'Rondas de Bingo', description: 'Juega 3 rondas de bingo', target: 3, progress: 0, reward: 300, completed: false },
   ]
   return missions
 }

@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion'
-import { Target, Trophy, Zap, X } from 'lucide-react'
+import { Target, Trophy, Zap, X, Grid3X3 } from 'lucide-react'
+import { useLocation } from 'react-router-dom'
 import { useUIStore } from '../../store/uiStore'
 import { useProgressionStore } from '../../store/progressionStore'
 
@@ -7,11 +8,14 @@ const MISSION_ICONS: Record<string, typeof Target> = {
   spin: Zap,
   win: Target,
   bonus: Trophy,
+  bingo: Grid3X3,
 }
 
 export function MissionsModal() {
   const { showMissions, toggleMissions } = useUIStore()
   const { dailyMissions } = useProgressionStore()
+  const location = useLocation()
+  const isBingo = location.pathname === '/bingo'
 
   return (
     <AnimatePresence>
@@ -28,16 +32,19 @@ export function MissionsModal() {
             style={{ background: '#050505', border: '0.5px solid rgba(255,255,255,0.06)', boxShadow: '0 25px 60px rgba(0,0,0,0.6)' }}
           >
             <div className="flex items-center justify-between mb-5">
-              <h2 className="text-sm font-semibold text-white">Metas Diarias</h2>
+              <h2 className="text-sm font-semibold text-white">Metas Diarias {isBingo ? '- Bingo' : ''}</h2>
               <button onClick={toggleMissions} className="w-8 h-8 rounded-lg flex items-center justify-center text-white/30 hover:text-white hover:bg-white/[0.04] transition-all cursor-pointer">
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             <div className="space-y-3">
-              {dailyMissions.map(m => {
-                const prefix = m.id.startsWith('spin') ? 'spin' : m.id.startsWith('win') ? 'win' : 'bonus'
-                const Icon = MISSION_ICONS[prefix]
+              {dailyMissions.filter(m => {
+                if (isBingo) return m.id.startsWith('bingo') || m.id.startsWith('win') || m.id.startsWith('bonus')
+                return m.id.startsWith('spin') || m.id.startsWith('win') || m.id.startsWith('bonus')
+              }).map(m => {
+                const iconId = m.id.startsWith('spin') ? 'spin' : m.id.startsWith('win') ? 'win' : m.id.startsWith('bingo') ? 'bingo' : 'bonus'
+                const Icon = MISSION_ICONS[iconId] || Target
                 return (
                   <div key={m.id} className="p-4 rounded-xl" style={{ border: '0.5px solid rgba(255,255,255,0.06)' }}>
                     <div className="flex items-center justify-between mb-2">

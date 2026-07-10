@@ -141,13 +141,12 @@ export const useGameStore = create<GameState>((set, get) => ({
       }
       const { user, profile } = useAuthStore.getState()
       if (user && profile) {
-        const { level, xp, achievements, dailyMissions, dailyLoginDay, lastLoginDate } = useProgressionStore.getState()
+        const { level, xp, achievements, dailyLoginDay, lastLoginDate } = useProgressionStore.getState()
         useAuthStore.getState().updateProfile({
           balance: finalBalance,
           level,
           xp,
           achievements,
-          dailyMissions,
           dailyLoginDay,
           lastLoginDate,
           totalSpins: get().totalSpins,

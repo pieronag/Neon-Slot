@@ -90,7 +90,7 @@ export function LoginPage() {
         </motion.div>
       </div>
 
-      <p className="text-center pb-4 text-[11px] text-white/15 relative z-10">NEON SLOTS &middot; Casino Premium 2026</p>
+      <p className="text-center pb-4 text-[11px] text-white/15 relative z-10">ORION MACHINE &middot; Casino Premium 2026</p>
     </div>
   )
 }

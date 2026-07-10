@@ -1,9 +1,10 @@
 import { motion, AnimatePresence } from 'framer-motion'
-import { Trophy, Target, Zap, Star, Crown, DollarSign, TrendingUp, X, Flame, Calendar, CheckCircle } from 'lucide-react'
+import { Trophy, Target, Zap, Star, Crown, DollarSign, TrendingUp, X, Flame, Calendar, CheckCircle, Grid3X3 } from 'lucide-react'
+import { useLocation } from 'react-router-dom'
 import { useUIStore } from '../../store/uiStore'
 import { useProgressionStore } from '../../store/progressionStore'
 
-const ACHIEVEMENTS = [
+const SLOT_ACHIEVEMENTS = [
   { id: 'first_spin', name: 'Primer Giro', desc: 'Gira una Vez', icon: Target, check: (_s: number, _w: number, _l: number) => true },
   { id: 'spin_25', name: '25 Giros', desc: 'Gira 25 Veces', icon: Zap, check: (s: number) => s >= 25 },
   { id: 'spin_100', name: '100 Giros', desc: 'Gira 100 Veces', icon: Zap, check: (s: number) => s >= 100 },
@@ -15,6 +16,19 @@ const ACHIEVEMENTS = [
   { id: 'win_5000', name: '+5000 Ganado', desc: 'Gana 5000 Monedas', icon: Crown, check: (_s: number, w: number) => w >= 5000 },
   { id: 'win_10000', name: '+10000 Ganado', desc: 'Gana 10000 Monedas', icon: Crown, check: (_s: number, w: number) => w >= 10000 },
   { id: 'jackpot_win', name: 'Jackpot', desc: 'Gana el Pozo Global', icon: Star, check: () => false },
+]
+
+const BINGO_ACHIEVEMENTS = [
+  { id: 'first_bingo', name: 'Primer Bingo', desc: 'Completa tu primer patrón', icon: Grid3X3, check: () => false },
+  { id: 'bingo_5', name: '5 Patrones', desc: 'Completa 5 patrones', icon: Target, check: () => false },
+  { id: 'bingo_25', name: '25 Patrones', desc: 'Completa 25 patrones', icon: Zap, check: () => false },
+  { id: 'bingo_full', name: 'Cartón Lleno', desc: 'Completa un cartón completo', icon: Crown, check: () => false },
+  { id: 'bingo_extra', name: 'Jugador de Extras', desc: 'Pide 10 extras en una ronda', icon: Flame, check: () => false },
+  { id: 'bingo_win_500', name: '+500 en Bingo', desc: 'Gana 500 monedas en una ronda', icon: DollarSign, check: () => false },
+  { id: 'bingo_win_2000', name: '+2000 en Bingo', desc: 'Gana 2000 monedas en una ronda', icon: Crown, check: () => false },
+]
+
+const SHARED_ACHIEVEMENTS = [
   { id: 'level_5', name: 'Nivel 5', desc: 'Alcanza Nivel 5', icon: Trophy, check: (_s: number, _w: number, l: number) => l >= 5 },
   { id: 'level_10', name: 'Nivel 10', desc: 'Alcanza Nivel 10', icon: Trophy, check: (_s: number, _w: number, l: number) => l >= 10 },
   { id: 'level_25', name: 'Nivel 25', desc: 'Alcanza Nivel 25', icon: Crown, check: (_s: number, _w: number, l: number) => l >= 25 },
@@ -27,7 +41,12 @@ const ACHIEVEMENTS = [
 export function AchievementsModal() {
   const { showAchievements, toggleAchievements } = useUIStore()
   const { achievements, level, xp, sessionSpins, sessionWins } = useProgressionStore()
+  const location = useLocation()
+  const isBingo = location.pathname === '/bingo'
   const nextXP = (level + 1) * (level + 1) * 100
+  const list = isBingo
+    ? [...BINGO_ACHIEVEMENTS, ...SHARED_ACHIEVEMENTS]
+    : [...SLOT_ACHIEVEMENTS, ...SHARED_ACHIEVEMENTS]
 
   return (
     <AnimatePresence>
@@ -44,7 +63,7 @@ export function AchievementsModal() {
             style={{ background: '#050505', border: '0.5px solid rgba(255,255,255,0.06)' }}
           >
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-bold text-white">Logros</h2>
+              <h2 className="text-lg font-bold text-white">Logros {isBingo ? '- Bingo' : '- Slots'}</h2>
               <button onClick={toggleAchievements} className="w-8 h-8 rounded-lg flex items-center justify-center text-white/30 hover:text-white hover:bg-white/[0.04] transition-all cursor-pointer">
                 <X className="w-4 h-4" />
               </button>
@@ -61,7 +80,7 @@ export function AchievementsModal() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-              {ACHIEVEMENTS.map(a => {
+              {list.map(a => {
                 const unlocked = achievements.includes(a.id) || a.check(sessionSpins, sessionWins, level)
                 const Icon = a.icon
                 return (

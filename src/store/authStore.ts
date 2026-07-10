@@ -136,7 +136,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           level: data.level,
           xp: data.xp,
           achievements: data.achievements || [],
-          dailyMissions: data.dailyMissions || useProgressionStore.getState().dailyMissions,
+          dailyMissions: useProgressionStore.getState().dailyMissions,
           dailyLoginDay: data.dailyLoginDay || useProgressionStore.getState().dailyLoginDay,
           lastLoginDate: data.lastLoginDate || useProgressionStore.getState().lastLoginDate,
         })
