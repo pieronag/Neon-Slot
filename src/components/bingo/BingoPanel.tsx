@@ -124,8 +124,8 @@ export function BingoPanel() {
   const totalCost = cardCount * betAmount
 
   return (
-    <div className="w-full sm:w-[360px] flex-shrink-0 h-full flex flex-col overflow-y-auto px-4 py-4 gap-4"
-      style={{ borderLeft: '0.5px solid rgba(255,255,255,0.04)', background: 'rgba(0,0,0,0.3)' }}>
+    <div className="w-full sm:w-[360px] flex-shrink-0 max-h-[45vh] sm:h-full flex flex-col overflow-y-auto px-4 py-4 pb-32 sm:pb-0 gap-4"
+      style={{ borderTop: '0.5px solid rgba(255,255,255,0.04)', borderLeft: '0.5px solid rgba(255,255,255,0.04)', background: 'rgba(0,0,0,0.3)' }}>
 
       {!isMobile && (
         <div className="p-3 rounded-xl" style={{ border: '0.5px solid rgba(255,255,255,0.06)' }}>
@@ -324,12 +324,12 @@ export function BingoPanel() {
               Cobrar ${formatNum(pendingWins)}
             </button>
           )}
-          <button onClick={resetGame}
-            className="w-full h-11 rounded-xl font-medium text-sm bg-white text-black hover:bg-neutral-200 transition-all flex items-center justify-center gap-2">
-            <RefreshCw className="w-4 h-4" /> Nueva Partida
-          </button>
-        </div>
-      )}
+            <button onClick={resetGame}
+              className="w-full h-11 rounded-xl font-medium text-sm bg-white text-black hover:bg-neutral-200 transition-all flex items-center justify-center gap-2">
+              <RefreshCw className="w-4 h-4" /> Nueva Partida
+            </button>
+          </div>
+        )}
     </div>
   )
 }

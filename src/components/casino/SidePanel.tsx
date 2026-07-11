@@ -26,7 +26,7 @@ export function SidePanel() {
   const nextLevelXP = (level + 1) * (level + 1) * 100
 
   return (
-    <aside className="w-full h-full flex flex-col overflow-y-auto px-6 py-5 gap-5" style={{ borderLeft: '0.5px solid rgba(255,255,255,0.04)' }}>
+    <aside className="w-full h-full flex flex-col overflow-y-auto px-6 py-5 gap-5 pb-32 sm:pb-0" style={{ borderLeft: '0.5px solid rgba(255,255,255,0.04)' }}>
 
       <div>
         <SectionTitle>Apuesta</SectionTitle>
@@ -134,7 +134,6 @@ export function SidePanel() {
           </div>
         )}
       </div>
-      <div className="h-64 sm:h-0" />
     </aside>
   )
 }
