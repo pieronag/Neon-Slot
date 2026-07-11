@@ -24,7 +24,7 @@ export function BingoPage() {
     <div className="h-screen w-screen flex flex-col relative overflow-hidden" style={{ background: '#050505' }}>
       <SpaceBackground />
       <Header />
-      <main className="flex-1 min-h-0 relative z-10">
+      <main className="flex-1 min-h-0 relative z-10 overflow-y-auto">
         <BingoBoard />
       </main>
       <DailyLogin />

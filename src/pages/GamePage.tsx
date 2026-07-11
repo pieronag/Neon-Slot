@@ -56,11 +56,11 @@ export function GamePage() {
       <Header />
 
       {isMobile ? (
-        <div className="flex-1 flex flex-col min-h-0 relative z-10">
+        <div className="flex-1 flex flex-col min-h-0 relative z-10 overflow-y-auto">
           <div className="flex-shrink-0 min-h-0" style={{ flex: '0 0 45%' }}>
             <SlotBoard />
           </div>
-          <div className="flex-shrink-0 overflow-y-auto border-t border-white/[0.04]" style={{ flex: '0 0 55%' }}>
+          <div className="flex-shrink-0 border-t border-white/[0.04]" style={{ flex: '0 0 55%' }}>
             <SidePanel />
           </div>
 
@@ -94,7 +94,7 @@ export function GamePage() {
           </AnimatePresence>
         </div>
       ) : (
-        <main className="flex-1 flex flex-row min-h-0 w-full px-4 py-3 gap-4 relative z-10">
+        <main className="flex-1 flex flex-row min-h-0 w-full px-4 py-3 gap-4 relative z-10 overflow-y-auto">
           <div className="flex-1 min-w-0 h-full"><SlotBoard /></div>
           <div className="w-[340px] lg:w-[380px] flex-shrink-0 h-full"><SidePanel /></div>
         </main>
