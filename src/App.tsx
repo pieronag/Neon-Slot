@@ -5,6 +5,7 @@ import { GameSelector } from './pages/GameSelector'
 import { GamePage } from './pages/GamePage'
 import { BingoPage } from './pages/BingoPage'
 import { BlackjackPage } from './pages/BlackjackPage'
+import { RoulettePage } from './pages/RoulettePage'
 import { LoginPage } from './pages/LoginPage'
 import { RegisterPage } from './pages/RegisterPage'
 import { ProfilePage } from './pages/ProfilePage'
@@ -28,6 +29,7 @@ export default function App() {
       <Route path="/slots" element={<ProtectedRoute><GamePage /></ProtectedRoute>} />
       <Route path="/bingo" element={<ProtectedRoute><BingoPage /></ProtectedRoute>} />
       <Route path="/blackjack" element={<ProtectedRoute><BlackjackPage /></ProtectedRoute>} />
+      <Route path="/roulette" element={<ProtectedRoute><RoulettePage /></ProtectedRoute>} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )

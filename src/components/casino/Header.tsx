@@ -14,11 +14,12 @@ export function Header() {
   const location = useLocation()
   const balance = useGameStore(s => s.balance)
   const level = useProgressionStore(s => s.level)
-  const { profile, logout, slotsJackpot, bingoJackpot, blackjackJackpot } = useAuthStore()
+  const { profile, logout, slotsJackpot, bingoJackpot, blackjackJackpot, rouletteJackpot } = useAuthStore()
   const { toggleAchievements, toggleMissions, toggleGlossary, setShowProfile, setMobilePanel } = useUIStore()
 
   const jackpot = location.pathname === '/bingo' ? bingoJackpot
     : location.pathname === '/blackjack' ? blackjackJackpot
+    : location.pathname === '/roulette' ? rouletteJackpot
     : slotsJackpot
 
   return (

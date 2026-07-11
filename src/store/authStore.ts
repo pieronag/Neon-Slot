@@ -46,6 +46,7 @@ interface AuthState {
   slotsJackpot: number
   bingoJackpot: number
   blackjackJackpot: number
+  rouletteJackpot: number
   error: string | null
   registering: boolean
 
@@ -60,8 +61,8 @@ interface AuthState {
   addMinigameResult: (type: 'win' | 'loss', amount: number, balance: number) => Promise<void>
   loadTransactions: (limitCount?: number) => Promise<void>
   loadGlobalJackpot: () => Promise<void>
-  addToJackpot: (game: 'slots' | 'bingo' | 'blackjack', amount: number) => Promise<void>
-  resetJackpot: (game: 'slots' | 'bingo' | 'blackjack') => Promise<void>
+  addToJackpot: (game: 'slots' | 'bingo' | 'blackjack' | 'roulette', amount: number) => Promise<void>
+  resetJackpot: (game: 'slots' | 'bingo' | 'blackjack' | 'roulette') => Promise<void>
   clearError: () => void
 }
 
@@ -74,6 +75,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   slotsJackpot: 50000,
   bingoJackpot: 50000,
   blackjackJackpot: 50000,
+  rouletteJackpot: 50000,
   error: null,
   registering: false,
   unsubscribeProfile: null,
@@ -212,12 +214,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     if (unsubscribeJackpot) unsubscribeJackpot()
     try {
       const snap = await getDoc(doc(db, 'global', 'pozo'))
-      if (!snap.exists()) await setDoc(doc(db, 'global', 'pozo'), { slots: 50000, bingo: 50000, blackjack: 50000 })
+      if (!snap.exists()) await setDoc(doc(db, 'global', 'pozo'), { slots: 50000, bingo: 50000, blackjack: 50000, roulette: 50000 })
     } catch (e) { console.error('Error inicializando pozo:', e) }
     const unsub = onSnapshot(doc(db, 'global', 'pozo'), (snap) => {
       if (snap.exists()) {
         const d = snap.data()
-        set({ slotsJackpot: d.slots || 50000, bingoJackpot: d.bingo || 50000, blackjackJackpot: d.blackjack || 50000 })
+        set({ slotsJackpot: d.slots || 50000, bingoJackpot: d.bingo || 50000, blackjackJackpot: d.blackjack || 50000, rouletteJackpot: d.roulette || 50000 })
       }
     })
     set({ unsubscribeJackpot: unsub })
