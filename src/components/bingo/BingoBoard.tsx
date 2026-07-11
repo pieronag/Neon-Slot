@@ -61,7 +61,7 @@ export function BingoBoard() {
             </div>
           )}
         </div>
-        <div className="flex-shrink-0 min-h-0 max-h-[35vh] overflow-y-auto pb-16" style={{ borderTop: '0.5px solid rgba(255,255,255,0.04)' }}>
+        <div className="flex-shrink-0 min-h-0 max-h-[35vh] overflow-y-auto pb-32" style={{ borderTop: '0.5px solid rgba(255,255,255,0.04)' }}>
           <BingoPanel />
         </div>
       </div>
