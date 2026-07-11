@@ -142,7 +142,7 @@ export function BlackjackTable() {
       </div>
 
       {/* Actions bar at bottom */}
-      <div className="flex-shrink-0 px-4 py-2 sm:py-3 pb-4 sm:pb-6" style={{ borderTop: '0.5px solid rgba(255,255,255,0.04)' }}>
+      <div className="flex-shrink-0 px-4 py-2 sm:py-3 pb-32 sm:pb-0" style={{ borderTop: '0.5px solid rgba(255,255,255,0.04)' }}>
         {phase === 'bet' && (
           <button onClick={placeBet} disabled={balance < betAmount}
             className="w-full h-12 rounded-xl font-bold text-base bg-white text-black hover:bg-neutral-200 transition-all disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer">
