@@ -5,7 +5,7 @@ export function GameSelector() {
   const nav = useNavigate()
 
   return (
-    <div className="min-h-screen w-screen flex items-start justify-center relative overflow-y-auto py-8" style={{ background: '#050505' }}>
+    <div className="h-screen w-screen flex items-start justify-center relative overflow-y-auto py-8" style={{ background: '#050505' }}>
       <SpaceBackground />
       <div className="relative z-10 text-center">
         <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2 tracking-tight">ORION MACHINE</h1>
