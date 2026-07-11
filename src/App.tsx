@@ -4,6 +4,7 @@ import { useAuthStore } from './store/authStore'
 import { GameSelector } from './pages/GameSelector'
 import { GamePage } from './pages/GamePage'
 import { BingoPage } from './pages/BingoPage'
+import { BlackjackPage } from './pages/BlackjackPage'
 import { LoginPage } from './pages/LoginPage'
 import { RegisterPage } from './pages/RegisterPage'
 import { ProfilePage } from './pages/ProfilePage'
@@ -26,6 +27,7 @@ export default function App() {
       <Route path="/" element={<ProtectedRoute><GameSelector /></ProtectedRoute>} />
       <Route path="/slots" element={<ProtectedRoute><GamePage /></ProtectedRoute>} />
       <Route path="/bingo" element={<ProtectedRoute><BingoPage /></ProtectedRoute>} />
+      <Route path="/blackjack" element={<ProtectedRoute><BlackjackPage /></ProtectedRoute>} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )

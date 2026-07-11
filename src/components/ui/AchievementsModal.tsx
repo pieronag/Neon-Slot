@@ -19,13 +19,24 @@ const SLOT_ACHIEVEMENTS = [
 ]
 
 const BINGO_ACHIEVEMENTS = [
-  { id: 'first_bingo', name: 'Primer Bingo', desc: 'Completa tu primer patrón', icon: Grid3X3, check: () => false },
-  { id: 'bingo_5', name: '5 Patrones', desc: 'Completa 5 patrones', icon: Target, check: () => false },
-  { id: 'bingo_25', name: '25 Patrones', desc: 'Completa 25 patrones', icon: Zap, check: () => false },
-  { id: 'bingo_full', name: 'Cartón Lleno', desc: 'Completa un cartón completo', icon: Crown, check: () => false },
-  { id: 'bingo_extra', name: 'Jugador de Extras', desc: 'Pide 10 extras en una ronda', icon: Flame, check: () => false },
-  { id: 'bingo_win_500', name: '+500 en Bingo', desc: 'Gana 500 monedas en una ronda', icon: DollarSign, check: () => false },
-  { id: 'bingo_win_2000', name: '+2000 en Bingo', desc: 'Gana 2000 monedas en una ronda', icon: Crown, check: () => false },
+  { id: 'first_bingo', name: 'Primer Bingo', desc: 'Completa tu primer patrón', icon: Grid3X3, check: (_s: number, _w: number, _l: number, _full: number, _extra: number, _bp: number) => _bp >= 1 },
+  { id: 'bingo_5', name: '5 Patrones', desc: 'Completa 5 patrones', icon: Target, check: (_s: number, _w: number, _l: number, _full: number, _extra: number, _bp: number) => _bp >= 5 },
+  { id: 'bingo_25', name: '25 Patrones', desc: 'Completa 25 patrones', icon: Zap, check: (_s: number, _w: number, _l: number, _full: number, _extra: number, _bp: number) => _bp >= 25 },
+  { id: 'bingo_full', name: 'Cartón Lleno', desc: 'Completa un cartón completo', icon: Crown, check: (_s: number, _w: number, _l: number, full: number) => full >= 1 },
+  { id: 'bingo_extra', name: 'Jugador de Extras', desc: 'Pide 10 extras total', icon: Flame, check: (_s: number, _w: number, _l: number, _full: number, extra: number) => extra >= 10 },
+  { id: 'bingo_win_500', name: '+500 en Bingo', desc: 'Gana 500 monedas en una ronda', icon: DollarSign, check: (_s: number, w: number) => w >= 500 },
+  { id: 'bingo_win_2000', name: '+2000 en Bingo', desc: 'Gana 2000 monedas en una ronda', icon: Crown, check: (_s: number, w: number) => w >= 2000 },
+]
+
+const BLACKJACK_ACHIEVEMENTS = [
+  { id: 'bj_first', name: 'Primera Mano', desc: 'Juega tu primera mano de blackjack', icon: Target, check: () => false },
+  { id: 'bj_win', name: 'Primera Victoria', desc: 'Gana tu primera mano', icon: Trophy, check: () => false },
+  { id: 'bj_blackjack', name: 'Blackjack Natural', desc: 'Consigue un blackjack natural (A+10)', icon: Star, check: () => false },
+  { id: 'bj_double', name: 'Doblar y Ganar', desc: 'Gana usando Double Down', icon: Zap, check: () => false },
+  { id: 'bj_split', name: 'Split y Victoria', desc: 'Gana usando Split', icon: Crown, check: () => false },
+  { id: 'bj_streak_3', name: '3 Seguidas', desc: 'Gana 3 manos consecutivas', icon: Flame, check: () => false },
+  { id: 'bj_win_10k', name: '+10k en BJ', desc: 'Gana 10000 monedas en blackjack', icon: DollarSign, check: () => false },
+  { id: 'bj_win_50k', name: '+50k en BJ', desc: 'Gana 50000 monedas en blackjack', icon: Crown, check: () => false },
 ]
 
 const SHARED_ACHIEVEMENTS = [
@@ -40,13 +51,16 @@ const SHARED_ACHIEVEMENTS = [
 
 export function AchievementsModal() {
   const { showAchievements, toggleAchievements } = useUIStore()
-  const { achievements, level, xp, sessionSpins, sessionWins } = useProgressionStore()
+  const { achievements, level, xp, sessionSpins, sessionWins, bingoPatterns, bingoFullCards, extraUsed } = useProgressionStore()
   const location = useLocation()
   const isBingo = location.pathname === '/bingo'
+  const isBlackjack = location.pathname === '/blackjack'
   const nextXP = (level + 1) * (level + 1) * 100
   const list = isBingo
     ? [...BINGO_ACHIEVEMENTS, ...SHARED_ACHIEVEMENTS]
-    : [...SLOT_ACHIEVEMENTS, ...SHARED_ACHIEVEMENTS]
+    : isBlackjack
+      ? [...BLACKJACK_ACHIEVEMENTS, ...SHARED_ACHIEVEMENTS]
+      : [...SLOT_ACHIEVEMENTS, ...SHARED_ACHIEVEMENTS]
 
   return (
     <AnimatePresence>
@@ -63,7 +77,7 @@ export function AchievementsModal() {
             style={{ background: '#050505', border: '0.5px solid rgba(255,255,255,0.06)' }}
           >
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-bold text-white">Logros {isBingo ? '- Bingo' : '- Slots'}</h2>
+              <h2 className="text-lg font-bold text-white">Logros {isBingo ? '- Bingo' : isBlackjack ? '- Blackjack' : '- Slots'}</h2>
               <button onClick={toggleAchievements} className="w-8 h-8 rounded-lg flex items-center justify-center text-white/30 hover:text-white hover:bg-white/[0.04] transition-all cursor-pointer">
                 <X className="w-4 h-4" />
               </button>
@@ -81,7 +95,7 @@ export function AchievementsModal() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
               {list.map(a => {
-                const unlocked = achievements.includes(a.id) || a.check(sessionSpins, sessionWins, level)
+                const unlocked = achievements.includes(a.id) || a.check(sessionSpins, sessionWins, level, bingoFullCards, extraUsed, bingoPatterns)
                 const Icon = a.icon
                 return (
                   <div key={a.id}

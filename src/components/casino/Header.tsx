@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { Menu, Trophy, Target, LogOut, ChevronDown, User, TrendingUp } from 'lucide-react'
 import { useGameStore } from '../../store/gameStore'
 import { useUIStore } from '../../store/uiStore'
@@ -11,10 +11,15 @@ const formatNum = (n: number) => Math.round(n).toLocaleString('es-CL')
 export function Header() {
   const [showMenu, setShowMenu] = useState(false)
   const nav = useNavigate()
+  const location = useLocation()
   const balance = useGameStore(s => s.balance)
   const level = useProgressionStore(s => s.level)
-  const { profile, logout, globalJackpot } = useAuthStore()
+  const { profile, logout, slotsJackpot, bingoJackpot, blackjackJackpot } = useAuthStore()
   const { toggleAchievements, toggleMissions, toggleGlossary, setShowProfile, setMobilePanel } = useUIStore()
+
+  const jackpot = location.pathname === '/bingo' ? bingoJackpot
+    : location.pathname === '/blackjack' ? blackjackJackpot
+    : slotsJackpot
 
   return (
     <header className="w-full px-5 py-3 flex-shrink-0 relative z-30" style={{ borderBottom: '0.5px solid rgba(255,255,255,0.06)', background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(30px)' }}>
@@ -33,7 +38,7 @@ export function Header() {
           <div className="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse shadow-[0_0_6px_rgba(255,215,0,0.6)]" />
           <div className="text-center">
             <div className="text-[7px] sm:text-[8px] text-yellow-600/60 uppercase tracking-wider font-semibold">Pozo global</div>
-            <div className="text-[11px] sm:text-sm font-bold text-yellow-400 font-mono">${formatNum(globalJackpot)}</div>
+            <div className="text-[11px] sm:text-sm font-bold text-yellow-400 font-mono">${formatNum(jackpot)}</div>
           </div>
         </div>
 

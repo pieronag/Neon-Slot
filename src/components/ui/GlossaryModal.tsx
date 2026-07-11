@@ -4,11 +4,13 @@ import { useLocation } from 'react-router-dom'
 import { useUIStore } from '../../store/uiStore'
 import { SymbolIcon } from './SymbolIcon'
 import { SYMBOLS } from '../../lib/symbols'
+import { PATTERNS, COMBO_BONUSES } from '../../lib/bingoPatterns'
 
 export function GlossaryModal() {
   const { showGlossary, toggleGlossary } = useUIStore()
   const location = useLocation()
   const isBingo = location.pathname === '/bingo'
+  const isBlackjack = location.pathname === '/blackjack'
 
   return (
     <AnimatePresence>
@@ -25,17 +27,13 @@ export function GlossaryModal() {
             style={{ background: '#050505', border: '0.5px solid rgba(255,255,255,0.06)' }}
           >
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-bold text-white">{isBingo ? 'Premios Bingo' : 'Sistema de Premios'}</h2>
+              <h2 className="text-lg font-bold text-white">{isBingo ? 'Premios Bingo' : isBlackjack ? 'Reglas Blackjack' : 'Sistema de Premios'}</h2>
               <button onClick={toggleGlossary} className="w-9 h-9 rounded-lg flex items-center justify-center text-white/30 hover:text-white hover:bg-white/[0.04] transition-all cursor-pointer">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            {isBingo ? (
-              <BingoGlossary />
-            ) : (
-              <SlotsGlossary />
-            )}
+            {isBingo ? <BingoGlossary /> : isBlackjack ? <BlackjackGlossary /> : <SlotsGlossary />}
           </motion.div>
         </div>
       )}
@@ -242,26 +240,25 @@ function BingoGlossary() {
         <div className="p-4 sm:p-5 rounded-xl" style={{ border: '0.5px solid rgba(255,255,255,0.06)' }}>
           <h3 className="text-sm font-semibold text-white mb-4">Patrones y Premios</h3>
           <div className="space-y-2 text-[11px] text-white/40">
-            {[
-              { name: '1 Fila', payout: '2×', desc: 'Una fila completa' },
-              { name: '2 Filas', payout: '5×', desc: 'Dos filas completas' },
-              { name: 'V', payout: '10×', desc: 'Forma de V en el cartón' },
-              { name: 'Triángulo', payout: '12×', desc: 'Triángulo invertido' },
-              { name: 'Cruz', payout: '15×', desc: 'Cruz centrada' },
-              { name: 'Corbata', payout: '12×', desc: 'Patrón de moño' },
-              { name: 'M', payout: '18×', desc: 'Forma de M' },
-              { name: 'X', payout: '8×', desc: 'Equis pequeña' },
-              { name: '4 Esquinas', payout: '5×', desc: 'Las 4 puntas' },
-              { name: 'Marco', payout: '20×', desc: 'Todo el borde' },
-              { name: '2X', payout: '25×', desc: 'Patrón alternado' },
-              { name: 'Cartón Lleno', payout: '50×', desc: 'Las 15 celdas' },
-            ].map(p => (
-              <div key={p.name} className="flex items-center justify-between py-1.5 px-2 rounded-lg bg-white/[0.02]">
+            {[...PATTERNS].sort((a, b) => a.payout - b.payout).map(p => (
+              <div key={p.id} className="flex items-center justify-between py-1.5 px-2 rounded-lg bg-white/[0.02]">
                 <span className="text-white/70">{p.name}</span>
-                <span className="text-white/40 text-[10px] flex-1 ml-2">{p.desc}</span>
-                <span className="text-yellow-400/80 font-mono font-medium ml-2">{p.payout}</span>
+                <span className="text-yellow-400/80 font-mono font-medium ml-auto">{p.payout}×</span>
               </div>
             ))}
+            {COMBO_BONUSES.length > 0 && (
+              <>
+                <div className="pt-2 mt-2" style={{ borderTop: '0.5px solid rgba(255,255,255,0.04)' }}>
+                  <div className="text-[10px] text-yellow-400/60 uppercase tracking-wider mb-2">Bonos por Combinación</div>
+                  {COMBO_BONUSES.map(c => (
+                    <div key={c.name} className="flex items-center justify-between py-1 px-2 rounded bg-white/[0.02]">
+                      <span className="text-yellow-400/70 text-[10px]">✨ {c.name}</span>
+                      <span className="text-yellow-400 font-mono text-[10px]">+{c.bonus}×</span>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
         </div>
 
@@ -277,6 +274,68 @@ function BingoGlossary() {
           <div className="p-4 rounded-xl text-center" style={{ border: '0.5px solid rgba(255,255,255,0.06)' }}>
             <div className="text-2xl font-bold text-white font-mono">12</div>
             <div className="text-xs text-white/40 mt-1">Patrones</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function BlackjackGlossary() {
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div className="space-y-4">
+        <div className="p-4 sm:p-5 rounded-xl" style={{ border: '0.5px solid rgba(255,255,255,0.06)' }}>
+          <h3 className="text-sm font-semibold text-white mb-3">Objetivo del Juego</h3>
+          <p className="text-sm text-white/50 leading-relaxed mb-3">Consigue un valor de cartas más cercano a 21 que el dealer sin pasarte.</p>
+          <ul className="text-[11px] text-white/40 space-y-1 leading-relaxed">
+            <li>• 6 barajas de 52 cartas mezcladas cada mano.</li>
+            <li>• Recibes 2 cartas. El dealer recibe 2 (1 oculta).</li>
+            <li>• Puedes Pedir o Plantarte.</li>
+          </ul>
+        </div>
+        <div className="p-4 sm:p-5 rounded-xl" style={{ border: '0.5px solid rgba(255,255,255,0.06)' }}>
+          <h3 className="text-sm font-semibold text-white mb-3">Opciones</h3>
+          <div className="space-y-1.5 text-[11px] text-white/40">
+            <div className="p-2 rounded bg-white/[0.02]"><span className="text-white/70">Pedir</span> — Recibe una carta más.</div>
+            <div className="p-2 rounded bg-white/[0.02]"><span className="text-white/70">Plantarse</span> — Terminas tu turno.</div>
+            <div className="p-2 rounded bg-white/[0.02]"><span className="text-white/70">Doblar</span> — Duplica apuesta, 1 carta más.</div>
+            <div className="p-2 rounded bg-white/[0.02]"><span className="text-white/70">Split</span> — Separa pares en 2 manos.</div>
+            <div className="p-2 rounded bg-white/[0.02]"><span className="text-white/70">Seguro</span> — Contra As del dealer (2:1 si BJ).</div>
+          </div>
+        </div>
+      </div>
+      <div className="space-y-4">
+        <div className="p-4 sm:p-5 rounded-xl" style={{ border: '0.5px solid rgba(255,255,255,0.06)' }}>
+          <h3 className="text-sm font-semibold text-white mb-3">Reglas y Pagos</h3>
+          <div className="space-y-1.5 text-[11px]">
+            {[
+              { r: 'Dealer planta en 17', p: 'Incluye soft 17' },
+              { r: 'Blackjack (A+10/J/Q/K)', p: '3:2' },
+              { r: 'Ganar por puntos', p: '1:1' },
+              { r: 'Empuje (Push)', p: 'Devuelve apuesta' },
+              { r: 'Doblar y ganar', p: '2:1' },
+              { r: 'Seguro (BJ dealer)', p: '2:1' },
+            ].map(i => (
+              <div key={i.r} className="flex justify-between py-1 px-2 rounded bg-white/[0.02]">
+                <span className="text-white/70">{i.r}</span>
+                <span className="text-yellow-400/80 font-mono">{i.p}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="grid grid-cols-3 gap-3">
+          <div className="p-4 rounded-xl text-center" style={{ border: '0.5px solid rgba(255,255,255,0.06)' }}>
+            <div className="text-2xl font-bold text-white font-mono">6</div>
+            <div className="text-xs text-white/40 mt-1">Barajas</div>
+          </div>
+          <div className="p-4 rounded-xl text-center" style={{ border: '0.5px solid rgba(255,255,255,0.06)' }}>
+            <div className="text-2xl font-bold text-white font-mono">17</div>
+            <div className="text-xs text-white/40 mt-1">Planta Dealer</div>
+          </div>
+          <div className="p-4 rounded-xl text-center" style={{ border: '0.5px solid rgba(255,255,255,0.06)' }}>
+            <div className="text-2xl font-bold text-white font-mono">3:2</div>
+            <div className="text-xs text-white/40 mt-1">Pago BJ</div>
           </div>
         </div>
       </div>

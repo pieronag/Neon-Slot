@@ -20,6 +20,10 @@ interface ProgressionState {
   dailyMissions: DailyMission[];
   sessionSpins: number;
   sessionWins: number;
+  bingoRounds: number;
+  bingoPatterns: number;
+  bingoFullCards: number;
+  extraUsed: number;
 
   awardXP: (amount: number) => void;
   claimDailyLogin: () => void;
@@ -53,9 +57,10 @@ const ALL_ACHIEVEMENTS: Achievement[] = [
   { id: 'login_7', name: '7 Días', description: 'Inicia Sesión 7 Días Seguidos', icon: '📅', condition: s => s.dailyLoginDay >= 7, reward: 3000, xp: 1000 },
   { id: 'mission_1', name: 'Cumplidor', description: 'Completa 1 Meta', icon: '📋', condition: s => s.dailyMissions.filter(m => m.completed).length >= 1, reward: 200, xp: 100 },
   { id: 'mission_5', name: 'Entusiasta', description: 'Completa 5 Metas', icon: '📋', condition: s => s.dailyMissions.filter(m => m.completed).length >= 5, reward: 1000, xp: 300 },
-  { id: 'first_bingo', name: 'Primer Bingo', description: 'Completa tu primer patrón de bingo', icon: '🎱', condition: () => false, reward: 500, xp: 100 },
-  { id: 'bingo_5', name: '5 Patrones', description: 'Completa 5 patrones de bingo', icon: '🎱', condition: () => false, reward: 2000, xp: 300 },
-  { id: 'bingo_full', name: 'Cartón Lleno', description: 'Completa un cartón completo en bingo', icon: '🎱', condition: () => false, reward: 5000, xp: 1000 },
+  { id: 'first_bingo', name: 'Primer Bingo', description: 'Completa tu primer patrón de bingo', icon: '🎱', condition: s => s.bingoPatterns >= 1, reward: 500, xp: 100 },
+  { id: 'bingo_5', name: '5 Patrones', description: 'Completa 5 patrones de bingo', icon: '🎱', condition: s => s.bingoPatterns >= 5, reward: 2000, xp: 300 },
+  { id: 'bingo_full', name: 'Cartón Lleno', description: 'Completa un cartón completo en bingo', icon: '🎱', condition: s => s.bingoFullCards >= 1, reward: 5000, xp: 1000 },
+  { id: 'bingo_extra', name: 'Jugador de Extras', description: 'Usa 10 extras en total', icon: '🔄', condition: s => s.extraUsed >= 10, reward: 1000, xp: 200 },
 ]
 
 // Deduplicate by id
@@ -69,6 +74,7 @@ function generateDailyMissions(): DailyMission[] {
     { id: `win_${Date.now()}`, name: 'Ganar Dinero', description: 'Gana 300 monedas en total', target: 300, progress: 0, reward: 300, completed: false },
     { id: `bonus_${Date.now()}`, name: 'Completar Patrones', description: 'Completa 3 patrones o bonificaciones', target: 3, progress: 0, reward: 500, completed: false },
     { id: `bingo_${Date.now()}`, name: 'Rondas de Bingo', description: 'Juega 3 rondas de bingo', target: 3, progress: 0, reward: 300, completed: false },
+    { id: `blackjack_${Date.now()}`, name: 'Manos de BJ', description: 'Juega 5 manos de blackjack', target: 5, progress: 0, reward: 400, completed: false },
   ]
   return missions
 }
@@ -90,6 +96,10 @@ export const useProgressionStore = create<ProgressionState>((set, get) => ({
   dailyMissions: generateDailyMissions(),
   sessionSpins: 0,
   sessionWins: 0,
+  bingoRounds: 0,
+  bingoPatterns: 0,
+  bingoFullCards: 0,
+  extraUsed: 0,
 
   awardXP: (amount) => {
     const { xp, level } = get()

@@ -1,6 +1,6 @@
-import type { BingoCard, ExtraOption, CompletedPattern } from '../types/bingo'
+import type { BingoCard, ExtraOption, CompletedPattern, MissingHighlight } from '../types/bingo'
 import { COL_RANGES } from '../types/bingo'
-import { PATTERNS } from './bingoPatterns'
+import { PATTERNS, COMBO_BONUSES } from './bingoPatterns'
 
 export function generateCard(id: number): BingoCard {
   const columns: number[][] = []
@@ -33,6 +33,17 @@ export function checkPatterns(cards: BingoCard[], betAmount: number): CompletedP
     for (const p of PATTERNS) {
       if (p.check(cards[ci].marked)) {
         completed.push({ cardIndex: ci, patternId: p.id, patternName: p.name, payout: p.payout * betAmount })
+      }
+    }
+  }
+  // Add combo bonuses per card
+  for (let ci = 0; ci < cards.length; ci++) {
+    const cardPatternIds = completed.filter(cp => cp.cardIndex === ci).map(cp => cp.patternId)
+    for (const combo of COMBO_BONUSES) {
+      if (combo.patterns.every(p => cardPatternIds.includes(p))) {
+        if (!completed.find(cp => cp.cardIndex === ci && cp.patternId === `combo_${combo.name}`)) {
+          completed.push({ cardIndex: ci, patternId: `combo_${combo.name}`, patternName: `✨ ${combo.name}`, payout: combo.bonus * betAmount })
+        }
       }
     }
   }
@@ -95,10 +106,35 @@ export function countExtraChances(cards: BingoCard[], called: Set<number>): numb
       for (const p of PATTERNS) {
         if (p.check(testMarked)) { chances++; break }
       }
-      break // only count once per number (any card)
+      break
     }
   }
   return chances
+}
+
+export function getMissingHighlights(cards: BingoCard[]): MissingHighlight[][] {
+  return cards.map(card => {
+    const highlightsMap = new Map<string, MissingHighlight>()
+    for (let col = 0; col < 5; col++) {
+      for (let row = 0; row < 3; row++) {
+        if (card.marked[col][row]) continue
+        const testMarked = card.marked.map((colArr, ci) => colArr.map((v, ri) => v || (ci === col && ri === row)))
+        let totalPayout = 0
+        for (const p of PATTERNS) {
+          if (p.check(testMarked)) {
+            totalPayout += p.payout
+          }
+        }
+        if (totalPayout > 0) {
+          const key = `${col}-${row}`
+          if (!highlightsMap.has(key)) {
+            highlightsMap.set(key, { col, row, number: card.columns[col][row], payout: totalPayout })
+          }
+        }
+      }
+    }
+    return Array.from(highlightsMap.values())
+  })
 }
 
 function findNumberPosition(card: BingoCard, num: number): [number, number] | null {

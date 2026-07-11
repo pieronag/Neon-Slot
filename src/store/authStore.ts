@@ -43,6 +43,9 @@ interface AuthState {
   transactions: Transaction[]
   loading: boolean
   globalJackpot: number
+  slotsJackpot: number
+  bingoJackpot: number
+  blackjackJackpot: number
   error: string | null
   registering: boolean
 
@@ -57,8 +60,8 @@ interface AuthState {
   addMinigameResult: (type: 'win' | 'loss', amount: number, balance: number) => Promise<void>
   loadTransactions: (limitCount?: number) => Promise<void>
   loadGlobalJackpot: () => Promise<void>
-  addToJackpot: (amount: number) => Promise<void>
-  resetJackpot: () => Promise<void>
+  addToJackpot: (game: 'slots' | 'bingo' | 'blackjack', amount: number) => Promise<void>
+  resetJackpot: (game: 'slots' | 'bingo' | 'blackjack') => Promise<void>
   clearError: () => void
 }
 
@@ -68,6 +71,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   transactions: [],
   loading: true,
   globalJackpot: 50000,
+  slotsJackpot: 50000,
+  bingoJackpot: 50000,
+  blackjackJackpot: 50000,
   error: null,
   registering: false,
   unsubscribeProfile: null,
@@ -206,27 +212,32 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     if (unsubscribeJackpot) unsubscribeJackpot()
     try {
       const snap = await getDoc(doc(db, 'global', 'pozo'))
-      if (!snap.exists()) await setDoc(doc(db, 'global', 'pozo'), { monto: 50000 })
+      if (!snap.exists()) await setDoc(doc(db, 'global', 'pozo'), { slots: 50000, bingo: 50000, blackjack: 50000 })
     } catch (e) { console.error('Error inicializando pozo:', e) }
     const unsub = onSnapshot(doc(db, 'global', 'pozo'), (snap) => {
-      if (snap.exists()) set({ globalJackpot: snap.data().monto || 50000 })
+      if (snap.exists()) {
+        const d = snap.data()
+        set({ slotsJackpot: d.slots || 50000, bingoJackpot: d.bingo || 50000, blackjackJackpot: d.blackjack || 50000 })
+      }
     })
     set({ unsubscribeJackpot: unsub })
   },
 
-  addToJackpot: async (amount) => {
-    const { globalJackpot } = get()
-    const nuevo = globalJackpot + amount
-    set({ globalJackpot: nuevo })
+  addToJackpot: async (game, amount) => {
+    const key = `${game}Jackpot` as const
+    const current = get()[key]
+    const nuevo = current + amount
+    set({ [key]: nuevo } as any)
     try {
-      await setDoc(doc(db, 'global', 'pozo'), { monto: nuevo })
+      await setDoc(doc(db, 'global', 'pozo'), { [game]: nuevo }, { merge: true })
     } catch (e) { console.error('Error actualizando pozo:', e) }
   },
 
-  resetJackpot: async () => {
-    set({ globalJackpot: 50000 })
+  resetJackpot: async (game) => {
+    const key = `${game}Jackpot` as const
+    set({ [key]: 50000 } as any)
     try {
-      await setDoc(doc(db, 'global', 'pozo'), { monto: 50000 })
+      await setDoc(doc(db, 'global', 'pozo'), { [game]: 50000 }, { merge: true })
     } catch (e) { console.error('Error reseteando pozo:', e) }
   },
 

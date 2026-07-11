@@ -26,6 +26,13 @@ export interface CompletedPattern {
   payout: number
 }
 
+export interface MissingHighlight {
+  col: number
+  row: number
+  number: number
+  payout: number
+}
+
 export const COLORS = {
   B: '#3b82f6',
   I: '#ef4444',

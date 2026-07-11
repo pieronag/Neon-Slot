@@ -1,8 +1,8 @@
 import { useState } from 'react'
-import { Minus, Plus, Zap, Play, RefreshCw, Sparkles, Trophy, ChevronDown, ChevronUp } from 'lucide-react'
+import { Minus, Plus, Zap, Play, RefreshCw, Sparkles, ChevronDown, ChevronUp } from 'lucide-react'
 import { useBingoStore } from '../../store/bingoStore'
 import { useGameStore } from '../../store/gameStore'
-import { PATTERNS } from '../../lib/bingoPatterns'
+import { PATTERNS, COMBO_BONUSES } from '../../lib/bingoPatterns'
 import { useIsMobile } from '../../hooks/useIsMobile'
 
 const formatNum = (n: number) => Math.round(n).toLocaleString('es-CL')
@@ -62,6 +62,36 @@ const PATTERN_VISUALS: Record<string, string[][]> = {
     ['■', '·', '■', '·', '■'],
     ['·', '■', '·', '■', '·'],
     ['■', '·', '■', '·', '■'],
+  ],
+  three_rows: [
+    ['■', '■', '■', '■', '■'],
+    ['■', '■', '■', '■', '■'],
+    ['■', '■', '■', '■', '■'],
+  ],
+  t_shape: [
+    ['■', '■', '■', '■', '■'],
+    ['·', '·', '■', '·', '·'],
+    ['·', '·', '■', '·', '·'],
+  ],
+  hourglass: [
+    ['·', '·', '■', '·', '·'],
+    ['·', '■', '■', '■', '·'],
+    ['·', '·', '■', '·', '·'],
+  ],
+  snake: [
+    ['■', '·', '·', '·', '·'],
+    ['·', '■', '■', '■', '·'],
+    ['·', '·', '·', '·', '■'],
+  ],
+  diamond: [
+    ['·', '■', '·', '■', '·'],
+    ['■', '·', '·', '·', '■'],
+    ['·', '■', '·', '■', '·'],
+  ],
+  w_shape: [
+    ['■', '·', '·', '·', '■'],
+    ['■', '·', '■', '·', '■'],
+    ['■', '■', '·', '■', '■'],
   ],
   full_card: [
     ['■', '■', '■', '■', '■'],
@@ -193,7 +223,7 @@ export function BingoPanel() {
         {showPatterns && (
           <div className="px-3 pb-3">
             <div className="grid grid-cols-2 gap-x-2 gap-y-1.5">
-              {PATTERNS.map(p => {
+              {[...PATTERNS].sort((a, b) => a.payout - b.payout).map(p => {
                 const visual = PATTERN_VISUALS[p.id]
                 return (
                   <div key={p.id} className="flex items-center gap-2 py-1">
@@ -204,6 +234,19 @@ export function BingoPanel() {
                 )
               })}
             </div>
+            {COMBO_BONUSES.length > 0 && (
+              <div className="mt-2 pt-2" style={{ borderTop: '0.5px solid rgba(255,255,255,0.04)' }}>
+                <div className="text-[9px] text-yellow-400/60 uppercase tracking-wider mb-1.5">Bonos por Combinación</div>
+                <div className="grid grid-cols-2 gap-x-2 gap-y-1">
+                  {COMBO_BONUSES.map(c => (
+                    <div key={c.name} className="flex items-center justify-between py-0.5">
+                      <span className="text-[9px] text-yellow-400/70">✨ {c.name}</span>
+                      <span className="text-[9px] text-yellow-400 font-mono">+{c.bonus}×</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -234,7 +277,7 @@ export function BingoPanel() {
           <button onClick={buyRandomExtra}
             className="w-full h-10 rounded-xl font-medium text-[11px] transition-all cursor-pointer flex items-center justify-center gap-2"
             style={{ background: 'rgba(234,179,8,0.1)', border: '0.5px solid rgba(234,179,8,0.2)', color: '#eab308' }}>
-            <Sparkles className="w-3.5 h-3.5" /> Pedir Extra (${formatNum(extraCost)})
+            <Sparkles className="w-3.5 h-3.5" /> Pedir Extra ({extraCost > 0 ? `$${formatNum(extraCost)}` : 'Gratis'})
           </button>
 
           {!claimed && pendingWins > 0 && (
@@ -254,11 +297,33 @@ export function BingoPanel() {
 
       {gameOver && (
         <div className="space-y-3">
-          <div className="p-3 rounded-xl text-center" style={{ border: '0.5px solid rgba(255,255,255,0.06)' }}>
-            <Trophy className="w-6 h-6 text-yellow-400 mx-auto mb-1" />
-            <div className="text-sm font-bold text-white">Juego Terminado</div>
-            <div className="text-[10px] text-white/40 mt-1">Total ganado: <span className="text-green-400 font-mono font-medium">+{formatNum(totalWin)}</span></div>
+          <div className="p-3 rounded-xl" style={{ border: '0.5px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.02)' }}>
+            <div className="text-[9px] text-white/30 uppercase tracking-wider mb-2">Resultados Finales</div>
+            {completedPatterns.length > 0 ? (
+              <div className="space-y-1.5">
+                {completedPatterns.map((cp, i) => (
+                  <div key={i} className="flex items-center justify-between text-[11px]">
+                    <span className="text-white/60">Cartón {cp.cardIndex + 1} · {cp.patternName}</span>
+                    <span className="text-green-400 font-mono font-medium">+{formatNum(cp.payout)}</span>
+                  </div>
+                ))}
+                <div className="pt-1.5 mt-1.5 flex items-center justify-between text-xs font-semibold"
+                  style={{ borderTop: '0.5px solid rgba(255,255,255,0.06)' }}>
+                  <span className="text-white">Total ganado</span>
+                  <span className="text-green-400 font-mono">+{formatNum(totalWin)}</span>
+                </div>
+              </div>
+            ) : (
+              <p className="text-xs text-white/40">Sin patrones completados</p>
+            )}
           </div>
+          {!claimed && pendingWins > 0 && (
+            <button onClick={claimWinnings}
+              className="w-full h-11 rounded-xl font-medium text-sm transition-all cursor-pointer flex items-center justify-center gap-2"
+              style={{ background: 'linear-gradient(135deg, #22c55e, #16a34a)', color: '#fff' }}>
+              Cobrar ${formatNum(pendingWins)}
+            </button>
+          )}
           <button onClick={resetGame}
             className="w-full h-11 rounded-xl font-medium text-sm bg-white text-black hover:bg-neutral-200 transition-all flex items-center justify-center gap-2">
             <RefreshCw className="w-4 h-4" /> Nueva Partida

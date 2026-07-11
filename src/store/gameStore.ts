@@ -86,16 +86,16 @@ export const useGameStore = create<GameState>((set, get) => ({
       const newLossStreak = isWin ? 0 : get().lossStreak + 1
       const newWinStreak = isWin ? get().winStreak + 1 : 0
 
-      useAuthStore.getState().addToJackpot(Math.round(cost * 0.15))
+      useAuthStore.getState().addToJackpot('slots', Math.round(cost * 0.15))
 
-      const jackpotActual = useAuthStore.getState().globalJackpot
+      const jackpotActual = useAuthStore.getState().slotsJackpot
       const jackpotWon = result.wins.some(w => w.count >= 5 && w.symbolId === 'diamond')
       const jackpotPayout = jackpotWon ? jackpotActual : 0
 
       if (jackpotWon) {
         soundManager.play('bigwin')
         useUIStore.getState().showWin(jackpotActual)
-        useAuthStore.getState().resetJackpot()
+        useAuthStore.getState().resetJackpot('slots')
         useProgressionStore.getState().addAchievement('jackpot_win')
       }
 

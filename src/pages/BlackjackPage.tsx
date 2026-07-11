@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { SpaceBackground } from '../components/ui/SpaceBackground'
 import { Header } from '../components/casino/Header'
-import { BingoBoard } from '../components/bingo/BingoBoard'
+import { BlackjackTable } from '../components/blackjack/BlackjackTable'
 import { DailyLogin } from '../components/ui/DailyLogin'
 import { LevelUp } from '../components/ui/LevelUp'
 import { MissionsModal } from '../components/ui/MissionsModal'
@@ -13,7 +13,7 @@ import { useProgressionStore } from '../store/progressionStore'
 import { useUIStore } from '../store/uiStore'
 import { soundManager } from '../lib/soundManager'
 
-export function BingoPage() {
+export function BlackjackPage() {
   useEffect(() => {
     soundManager.enabled = true
     const show = useProgressionStore.getState().checkDailyLogin()
@@ -25,7 +25,7 @@ export function BingoPage() {
       <SpaceBackground />
       <Header />
       <main className="flex-1 min-h-0 relative z-10">
-        <BingoBoard />
+        <BlackjackTable />
       </main>
       <DailyLogin />
       <LevelUp />
