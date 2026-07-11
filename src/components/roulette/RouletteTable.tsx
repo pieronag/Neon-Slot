@@ -75,7 +75,7 @@ export function RouletteTable() {
       <div className="w-full sm:w-[340px] flex-shrink-0 flex-1 sm:flex-none sm:h-full flex flex-col overflow-hidden min-h-0"
         style={{ borderLeft: '0.5px solid rgba(255,255,255,0.04)', background: 'rgba(0,0,0,0.3)' }}>
         
-        <div className="flex-1 overflow-y-auto min-h-0 px-4 py-4 flex flex-col gap-4">
+        <div className="flex-1 overflow-y-auto min-h-0 px-4 py-4 pb-6 flex flex-col gap-4">
           {/* Bet grid */}
           <div className="overflow-x-auto flex-shrink-0">
             <RouletteBetGrid />

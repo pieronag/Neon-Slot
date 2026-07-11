@@ -35,7 +35,7 @@ export function RouletteBetGrid() {
           const active = getBet('straight', [0])
           return (
             <button onClick={() => doBet('straight', [0], '0')}
-              className="w-full h-10 rounded-sm flex items-center justify-center text-white font-bold text-sm cursor-pointer hover:opacity-80 transition-all relative"
+              className="w-full h-8 sm:h-10 rounded-sm flex items-center justify-center text-white font-bold text-sm cursor-pointer hover:opacity-80 transition-all relative"
               style={{
                 background: COLORS.green,
                 border: active ? '2px solid #fff' : '0.5px solid rgba(255,255,255,0.1)',
@@ -55,7 +55,7 @@ export function RouletteBetGrid() {
             const active = getBet('straight', [n])
             return (
               <button key={n} onClick={() => doBet('straight', [n], `${n}`)}
-                className="h-7 rounded-sm flex items-center justify-center text-[10px] font-bold text-white cursor-pointer hover:opacity-80 transition-all relative"
+                className="h-6 sm:h-7 rounded-sm flex items-center justify-center text-[10px] font-bold text-white cursor-pointer hover:opacity-80 transition-all relative"
                 style={{
                   background: COLORS[color],
                   border: active ? '2px solid #fff' : '0.5px solid rgba(255,255,255,0.1)',
@@ -77,7 +77,7 @@ export function RouletteBetGrid() {
           const active = getBet('dozen', nums)
           return (
             <button key={d} onClick={() => doBet('dozen', nums, `${start}-${end}`)}
-              className="h-7 rounded-sm flex items-center justify-center text-[9px] font-bold text-white cursor-pointer hover:opacity-80 transition-all relative"
+              className="h-6 sm:h-7 rounded-sm flex items-center justify-center text-[9px] font-bold text-white cursor-pointer hover:opacity-80 transition-all relative"
               style={{
                 background: 'rgba(255,255,255,0.06)',
                 border: active ? '2px solid #fff' : '0.5px solid rgba(255,255,255,0.1)',
@@ -99,7 +99,7 @@ export function RouletteBetGrid() {
             const active = getBet(b.type, [])
             return (
               <button key={b.type} onClick={() => doBet(b.type, [], b.label)}
-                className="h-8 rounded-sm flex items-center justify-center text-[10px] font-bold cursor-pointer hover:opacity-80 transition-all relative"
+                className="h-7 sm:h-8 rounded-sm flex items-center justify-center text-[10px] font-bold cursor-pointer hover:opacity-80 transition-all relative"
                 style={{
                   background: b.color ? `${b.color}66` : 'rgba(255,255,255,0.06)',
                   border: active ? '2px solid #fff' : '0.5px solid rgba(255,255,255,0.1)',
@@ -118,7 +118,7 @@ export function RouletteBetGrid() {
             const active = getBet(b.type, [])
             return (
               <button key={b.type} onClick={() => doBet(b.type, [], b.label)}
-                className="h-8 rounded-sm flex items-center justify-center text-[10px] font-bold cursor-pointer hover:opacity-80 transition-all relative"
+                className="h-7 sm:h-8 rounded-sm flex items-center justify-center text-[10px] font-bold cursor-pointer hover:opacity-80 transition-all relative"
                 style={{
                   background: b.color ? `${b.color}66` : 'rgba(255,255,255,0.06)',
                   border: active ? '2px solid #fff' : '0.5px solid rgba(255,255,255,0.1)',
@@ -137,9 +137,9 @@ export function RouletteBetGrid() {
             const active = getBet(b.type, [])
             return (
               <button key={b.type} onClick={() => doBet(b.type, [], b.label)}
-                className="h-8 rounded-sm flex items-center justify-center text-[10px] font-bold cursor-pointer hover:opacity-80 transition-all relative"
+                className="h-7 sm:h-8 rounded-sm flex items-center justify-center text-[10px] font-bold cursor-pointer hover:opacity-80 transition-all relative"
                 style={{
-                  background: 'rgba(255,255,255,0.06)',
+                  background: b.color ? `${b.color}66` : 'rgba(255,255,255,0.06)',
                   border: active ? '2px solid #fff' : '0.5px solid rgba(255,255,255,0.1)',
                 }}>
                 {b.label}

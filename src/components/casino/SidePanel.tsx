@@ -134,6 +134,7 @@ export function SidePanel() {
           </div>
         )}
       </div>
+      <div className="h-4 sm:h-6" />
     </aside>
   )
 }

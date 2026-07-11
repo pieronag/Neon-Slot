@@ -61,7 +61,7 @@ export function BingoBoard() {
             </div>
           )}
         </div>
-        <div className="flex-shrink-0 max-h-[35vh] overflow-y-auto" style={{ borderTop: '0.5px solid rgba(255,255,255,0.04)' }}>
+        <div className="flex-shrink-0 min-h-0 max-h-[35vh] overflow-y-auto pb-2" style={{ borderTop: '0.5px solid rgba(255,255,255,0.04)' }}>
           <BingoPanel />
         </div>
       </div>
@@ -77,7 +77,7 @@ export function BingoBoard() {
           <BingoBallDisplay />
         </div>
         {/* Cards area with scroll */}
-        <div className="flex-1 overflow-y-auto px-4 py-3">
+        <div className="flex-1 overflow-y-auto px-4 py-3 pb-6">
           {cards.length > 0 && (
             <div className="grid grid-cols-2 gap-3">
               {cards.map((c, i) => (

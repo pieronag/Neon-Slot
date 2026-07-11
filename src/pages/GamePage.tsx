@@ -60,7 +60,7 @@ export function GamePage() {
           <div className="flex-shrink-0 min-h-0" style={{ flex: '0 0 45%' }}>
             <SlotBoard />
           </div>
-          <div className="flex-shrink-0 border-t border-white/[0.04]" style={{ flex: '0 0 55%' }}>
+          <div className="flex-shrink-0 min-h-0 border-t border-white/[0.04]" style={{ flex: '0 0 55%' }}>
             <SidePanel />
           </div>
 
