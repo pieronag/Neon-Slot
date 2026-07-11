@@ -139,7 +139,7 @@ export function RouletteBetGrid() {
               <button key={b.type} onClick={() => doBet(b.type, [], b.label)}
                 className="h-7 sm:h-8 rounded-sm flex items-center justify-center text-[10px] font-bold cursor-pointer hover:opacity-80 transition-all relative"
                 style={{
-                  background: b.color ? `${b.color}66` : 'rgba(255,255,255,0.06)',
+                  background: 'rgba(255,255,255,0.06)',
                   border: active ? '2px solid #fff' : '0.5px solid rgba(255,255,255,0.1)',
                 }}>
                 {b.label}
